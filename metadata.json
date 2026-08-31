@@ -1,0 +1,6 @@
+{
+  "name": "AI Image Prompt Studio",
+  "description": "Curated AI image prompt library with one-click copy, interactive Lego prompt builder, style filters, dark/light modes, and side-by-side prompt comparison studio based on YouMind AI Image Prompts Skill.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
