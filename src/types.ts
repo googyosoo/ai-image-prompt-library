@@ -77,7 +77,7 @@ export interface CompareSlot {
   error?: string;
 }
 
-export type ActiveTab = 'library' | 'builder' | 'compare' | 'remix' | 'vision';
+export type ActiveTab = 'library' | 'wizard' | 'builder' | 'compare' | 'remix' | 'vision';
 
 export interface ImageAnalysisResult {
   enhancedPrompt: string;

@@ -81,6 +81,24 @@ export const Header: React.FC<HeaderProps> = ({
 
             <button
               type="button"
+              onClick={() => setActiveTab('wizard')}
+              className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+                activeTab === 'wizard'
+                  ? 'bg-amber-50 dark:bg-amber-950/60 text-amber-900 dark:text-amber-200 font-semibold border border-amber-300 dark:border-amber-700 shadow-xs'
+                  : 'text-stone-600 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-zinc-100 hover:bg-stone-50 dark:hover:bg-zinc-900'
+              }`}
+              id="nav-wizard-btn"
+            >
+              <Wand2 className="w-4 h-4 text-amber-500" />
+              <span className="font-bold">프롬프트 마법사</span>
+              <span className="hidden md:inline-flex text-[10px] px-1.5 py-0.5 rounded-full bg-gradient-to-r from-amber-500 to-rose-500 text-white font-bold shadow-xs">
+                초보자 추천
+              </span>
+            </button>
+
+
+            <button
+              type="button"
               onClick={() => setActiveTab('vision')}
               className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl text-sm font-medium transition-all ${
                 activeTab === 'vision'

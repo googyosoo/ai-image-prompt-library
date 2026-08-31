@@ -17,10 +17,13 @@ import { PromptCard } from './components/PromptCard';
 import { PromptDetailModal } from './components/PromptDetailModal';
 import { CompareStudio } from './components/CompareStudio';
 import { PromptRemixer } from './components/PromptRemixer';
+import { PromptWizard } from './components/PromptWizard';
 import { PromptLegoBuilder } from './components/PromptLegoBuilder';
 import { ImageToPromptVision } from './components/ImageToPromptVision';
 import { Toast } from './components/Toast';
+
 import { Sparkles, Frown, Compass, SlidersHorizontal, Wand2, Loader2, Github, Globe, Blocks, Scan } from 'lucide-react';
+
 
 
 export default function App() {
@@ -530,7 +533,16 @@ export default function App() {
           </div>
         )}
 
-        {/* ================= TAB 2: AI VISION INTERROGATE (IMAGE-TO-PROMPT) ================= */}
+        {/* ================= TAB 2: BEGINNER PROMPT WIZARD ================= */}
+        {activeTab === 'wizard' && (
+          <PromptWizard
+            onCopy={handleCopyPrompt}
+            onSendToCompare={handleSendCustomTextToCompare}
+            onSendToBuilder={handleSendVisionToBuilder}
+          />
+        )}
+
+        {/* ================= TAB 3: AI VISION INTERROGATE (IMAGE-TO-PROMPT) ================= */}
         {activeTab === 'vision' && (
           <ImageToPromptVision
             onCopy={handleCopyPrompt}
@@ -540,7 +552,8 @@ export default function App() {
           />
         )}
 
-        {/* ================= TAB 3: PROMPT LEGO BUILDER ================= */}
+        {/* ================= TAB 4: PROMPT LEGO BUILDER ================= */}
+
         {activeTab === 'builder' && (
           <PromptLegoBuilder
             onCopy={handleCopyPrompt}
