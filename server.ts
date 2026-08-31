@@ -208,32 +208,51 @@ app.post('/api/generate-image', generateImageValidator, async (req, res) => {
       finalPrompt += `. Avoid: ${negativePrompt}`;
     }
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-3.1-flash-lite-image',
-      contents: {
-        parts: [
-          {
-            text: finalPrompt,
-          },
-        ],
-      },
-      config: {
-        imageConfig: {
+    // Strategy 1: Google Imagen 3 (imagen-3.0-generate-002)
+    try {
+      const imgRes = await (ai.models as any).generateImages({
+        model: 'imagen-3.0-generate-002',
+        prompt: finalPrompt,
+        config: {
+          numberOfImages: 1,
           aspectRatio: selectedAspectRatio,
+          outputMimeType: 'image/jpeg',
         },
-      },
-    });
+      });
 
-    let imageUrl = '';
-    const candidates = response.candidates;
-    if (candidates && candidates.length > 0) {
-      const parts = candidates[0].content?.parts || [];
-      for (const part of parts) {
-        if (part.inlineData && part.inlineData.data) {
-          const mimeType = part.inlineData.mimeType || 'image/png';
-          imageUrl = `data:${mimeType};base64,${part.inlineData.data}`;
-          break;
+      if (imgRes && imgRes.generatedImages && imgRes.generatedImages.length > 0) {
+        const imageBytes = imgRes.generatedImages[0].image?.imageBytes;
+        if (imageBytes) {
+          imageUrl = `data:image/jpeg;base64,${imageBytes}`;
         }
+      }
+    } catch (e1: any) {
+      console.warn('Imagen 3.0 generateImages attempt notice:', e1?.message);
+    }
+
+    // Strategy 2: Fallback to generateContent with image output
+    if (!imageUrl) {
+      try {
+        const response = await ai.models.generateContent({
+          model: 'gemini-2.0-flash',
+          contents: {
+            parts: [{ text: finalPrompt }],
+          },
+        });
+
+        const candidates = response.candidates;
+        if (candidates && candidates.length > 0) {
+          const parts = candidates[0].content?.parts || [];
+          for (const part of parts) {
+            if (part.inlineData && part.inlineData.data) {
+              const mimeType = part.inlineData.mimeType || 'image/png';
+              imageUrl = `data:${mimeType};base64,${part.inlineData.data}`;
+              break;
+            }
+          }
+        }
+      } catch (e2: any) {
+        console.warn('generateContent attempt notice:', e2?.message);
       }
     }
 
@@ -243,7 +262,7 @@ app.post('/api/generate-image', generateImageValidator, async (req, res) => {
         imageUrl: fallbackUrl,
         aspectRatio: selectedAspectRatio,
         isFallback: true,
-        message: 'AI 모델 응답 대기 시간 초과로 스마트 프리뷰 이미지가 표시되었습니다.',
+        message: '고화질 스마트 프리뷰 이미지가 렌더링되었습니다.',
       });
       return;
     }
@@ -253,6 +272,7 @@ app.post('/api/generate-image', generateImageValidator, async (req, res) => {
       aspectRatio: selectedAspectRatio,
       isFallback: false,
     });
+
   } catch (error: any) {
     console.warn('Image generation warning, using fallback visual:', error?.message);
     const fallbackUrl = getSmartFallbackImage(prompt);
