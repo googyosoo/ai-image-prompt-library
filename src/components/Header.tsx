@@ -1,6 +1,6 @@
 import React from 'react';
-import { Sparkles, SlidersHorizontal, Wand2, Sun, Moon, Bookmark, Compass, Blocks, Scan } from 'lucide-react';
-import { ActiveTab } from '../types';
+import { Sparkles, SlidersHorizontal, Wand2, Sun, Moon, Bookmark, Compass, Blocks, Scan, LogOut, User } from 'lucide-react';
+import { ActiveTab, AuthUser } from '../types';
 
 interface HeaderProps {
   activeTab: ActiveTab;
@@ -11,6 +11,8 @@ interface HeaderProps {
   showFavoritesOnly: boolean;
   setShowFavoritesOnly: (val: boolean) => void;
   totalPromptsCount: number;
+  user?: AuthUser | null;
+  onLogout?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -22,7 +24,10 @@ export const Header: React.FC<HeaderProps> = ({
   showFavoritesOnly,
   setShowFavoritesOnly,
   totalPromptsCount,
+  user,
+  onLogout,
 }) => {
+
   return (
     <header
       className="sticky top-0 z-40 border-b border-stone-200 dark:border-zinc-800 bg-white/90 dark:bg-zinc-950/90 backdrop-blur-md transition-colors"
@@ -199,9 +204,49 @@ export const Header: React.FC<HeaderProps> = ({
                 <Moon className="w-4 h-4 text-stone-700" />
               )}
             </button>
+
+            {/* Authenticated User Badge & Logout */}
+            {user && (
+              <div className="flex items-center gap-2 pl-2 border-l border-stone-200 dark:border-zinc-800">
+                <div className="hidden lg:flex flex-col text-right">
+                  <span className="text-xs font-bold text-stone-800 dark:text-zinc-200 truncate max-w-[130px]">
+                    {user.name}
+                  </span>
+                  <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold truncate max-w-[130px]">
+                    {user.email}
+                  </span>
+                </div>
+
+                {user.picture ? (
+                  <img
+                    src={user.picture}
+                    alt={user.name}
+                    className="w-8 h-8 rounded-full border border-stone-300 dark:border-zinc-700 object-cover"
+                  />
+                ) : (
+                  <div className="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-bold shadow-xs">
+                    {user.name ? user.name[0] : 'U'}
+                  </div>
+                )}
+
+                {onLogout && (
+                  <button
+                    type="button"
+                    onClick={onLogout}
+                    title="로그아웃"
+                    className="p-2 rounded-xl border border-stone-200 dark:border-zinc-800 text-stone-500 dark:text-zinc-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
+                    id="header-logout-btn"
+                    aria-label="로그아웃"
+                  >
+                    <LogOut className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
     </header>
   );
 };
+

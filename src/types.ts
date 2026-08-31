@@ -121,4 +121,18 @@ export interface GitHubManifestData {
   popularKeywords?: { label: string; query: string }[];
 }
 
+export interface AuthUser {
+  email: string;
+  name: string;
+  picture?: string;
+  isAuthenticated: boolean;
+}
+
+export const ALLOWED_EMAILS: string[] = [
+  'kiparang999@gmail.com',
+  'hongjinwoo@simin.hs.kr',
+  'sitech3@simin.hs.kr',
+];
+
+
 

@@ -10,7 +10,10 @@ import {
   ToastMessage,
   DataSourceMode,
   GitHubManifestData,
+  AuthUser,
+  ALLOWED_EMAILS,
 } from './types';
+
 import { Header } from './components/Header';
 import { SearchBar } from './components/SearchBar';
 import { PromptCard } from './components/PromptCard';
@@ -20,19 +23,54 @@ import { PromptRemixer } from './components/PromptRemixer';
 import { PromptWizard } from './components/PromptWizard';
 import { PromptLegoBuilder } from './components/PromptLegoBuilder';
 import { ImageToPromptVision } from './components/ImageToPromptVision';
+import { LandingGate } from './components/LandingGate';
 import { Toast } from './components/Toast';
+
 
 import { Sparkles, Frown, Compass, SlidersHorizontal, Wand2, Loader2, Github, Globe, Blocks, Scan } from 'lucide-react';
 
 
 
 export default function App() {
+  // Authentication State: Whitelisted Google SSO
+  const [authUser, setAuthUser] = useState<AuthUser | null>(() => {
+    const saved = localStorage.getItem('ai_studio_auth_user');
+    if (saved) {
+      try {
+        const parsed: AuthUser = JSON.parse(saved);
+        if (
+          parsed &&
+          parsed.isAuthenticated &&
+          ALLOWED_EMAILS.map((e) => e.toLowerCase()).includes(parsed.email.toLowerCase())
+        ) {
+          return parsed;
+        }
+      } catch (e) {
+        return null;
+      }
+    }
+    return null;
+  });
+
+  const handleLoginSuccess = (user: AuthUser) => {
+    setAuthUser(user);
+    localStorage.setItem('ai_studio_auth_user', JSON.stringify(user));
+    addToast('success', '로그인 완료', `${user.name}님, 스튜디오에 입장하셨습니다!`);
+  };
+
+  const handleLogout = () => {
+    setAuthUser(null);
+    localStorage.removeItem('ai_studio_auth_user');
+    addToast('info', '로그아웃', '안전하게 로그아웃되었습니다.');
+  };
+
   // Theme state: dark mode & light mode toggle
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
     const saved = localStorage.getItem('ai_prompt_studio_theme');
     if (saved) return saved === 'dark';
     return window.matchMedia('(prefers-color-scheme: dark)').matches;
   });
+
 
   useEffect(() => {
     if (isDarkMode) {
@@ -409,6 +447,17 @@ export default function App() {
     setGitHubPage(1);
   };
 
+  // If not authenticated, render the Landing Gate
+
+  if (!authUser) {
+    return (
+      <div className="min-h-screen bg-stone-900 text-stone-100">
+        <LandingGate onLoginSuccess={handleLoginSuccess} />
+        <Toast toasts={toasts} onDismiss={handleDismissToast} />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-stone-50 dark:bg-zinc-950 text-stone-900 dark:text-zinc-100 transition-colors duration-200" id="app-root">
       {/* Global Header */}
@@ -421,7 +470,10 @@ export default function App() {
         showFavoritesOnly={showFavoritesOnly}
         setShowFavoritesOnly={setShowFavoritesOnly}
         totalPromptsCount={activeTotalCount}
+        user={authUser}
+        onLogout={handleLogout}
       />
+
 
       {/* Main App Container */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
