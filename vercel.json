@@ -2,8 +2,12 @@
   "version": 2,
   "rewrites": [
     {
-      "source": "/api/(.*)",
-      "destination": "/api/index"
+      "source": "/api/github/manifest",
+      "destination": "/api/github-manifest"
+    },
+    {
+      "source": "/api/github/prompts",
+      "destination": "/api/github-prompts"
     }
   ]
 }
