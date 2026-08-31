@@ -208,8 +208,11 @@ app.post('/api/generate-image', generateImageValidator, async (req, res) => {
       finalPrompt += `. Avoid: ${negativePrompt}`;
     }
 
+    let imageUrl = '';
+
     // Strategy 1: Google Imagen 3 (imagen-3.0-generate-002)
     try {
+
       const imgRes = await (ai.models as any).generateImages({
         model: 'imagen-3.0-generate-002',
         prompt: finalPrompt,
