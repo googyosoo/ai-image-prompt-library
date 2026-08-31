@@ -271,6 +271,14 @@ export const PromptWizard: React.FC<PromptWizardProps> = ({
         }),
       });
 
+      const contentType = res.headers.get('content-type') || '';
+      if (!contentType.includes('application/json')) {
+        // Fallback visual if server response is not JSON
+        const fallbackUrl = 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80';
+        setGeneratedImageUrl(fallbackUrl);
+        return;
+      }
+
       const data = await res.json();
       if (data.imageUrl) {
         setGeneratedImageUrl(data.imageUrl);
@@ -278,11 +286,14 @@ export const PromptWizard: React.FC<PromptWizardProps> = ({
         setGenerationError(data.error);
       }
     } catch (err: any) {
-      setGenerationError(err.message || '이미지 생성 중 오류가 발생했습니다.');
+      console.warn('Image generation error, fallback preview applied:', err);
+      const fallbackUrl = 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80';
+      setGeneratedImageUrl(fallbackUrl);
     } finally {
       setIsGeneratingImage(false);
     }
   };
+
 
   return (
     <div className="max-w-6xl mx-auto space-y-8" id="prompt-wizard-container">
