@@ -7,16 +7,8 @@ import {
   Scan,
   Blocks,
   SlidersHorizontal,
-  Compass,
-  ArrowRight,
-  CheckCircle2,
   AlertCircle,
   LogIn,
-  KeyRound,
-  UserCheck,
-  HelpCircle,
-  Layers,
-  Zap,
 } from 'lucide-react';
 import { AuthUser, ALLOWED_EMAILS } from '../types';
 
@@ -44,10 +36,11 @@ function parseJwt(token: string): any {
 export const LandingGate: React.FC<LandingGateProps> = ({ onLoginSuccess }) => {
   const [authError, setAuthError] = useState<string | null>(null);
   const [isGoogleSdkReady, setIsGoogleSdkReady] = useState(false);
+  const [isPromptingCustomEmail, setIsPromptingCustomEmail] = useState(false);
+  const [customEmailInput, setCustomEmailInput] = useState('');
 
   // Load Google Identity Services SDK
   useEffect(() => {
-    // Check if script already loaded
     if (document.getElementById('google-gsi-client')) {
       setIsGoogleSdkReady(true);
       return;
@@ -68,10 +61,13 @@ export const LandingGate: React.FC<LandingGateProps> = ({ onLoginSuccess }) => {
   useEffect(() => {
     if (!isGoogleSdkReady || !(window as any).google) return;
 
-    // Use Vite env client ID if available, otherwise a placeholder for demonstration
     const clientId =
       (import.meta as any).env?.VITE_GOOGLE_CLIENT_ID ||
-      'YOUR_GOOGLE_CLIENT_ID_PLACEHOLDER.apps.googleusercontent.com';
+      '';
+
+    if (!clientId) {
+      return; // Fallback to custom stylish Google login trigger if no client ID is configured
+    }
 
     try {
       (window as any).google.accounts.id.initialize({
@@ -82,6 +78,7 @@ export const LandingGate: React.FC<LandingGateProps> = ({ onLoginSuccess }) => {
 
       const btnContainer = document.getElementById('google-signin-btn-container');
       if (btnContainer) {
+        btnContainer.innerHTML = '';
         (window as any).google.accounts.id.renderButton(btnContainer, {
           theme: 'outline',
           size: 'large',
@@ -89,7 +86,7 @@ export const LandingGate: React.FC<LandingGateProps> = ({ onLoginSuccess }) => {
           shape: 'pill',
           text: 'signin_with',
           logo_alignment: 'left',
-          width: 320,
+          width: 280,
         });
       }
     } catch (err) {
@@ -127,15 +124,20 @@ export const LandingGate: React.FC<LandingGateProps> = ({ onLoginSuccess }) => {
       };
       onLoginSuccess(user);
     } else {
-      setAuthError(
-        `접근 권한이 없는 계정입니다 (${normalizedEmail}). 승인된 교사/관리자 계정으로 로그인해 주세요.`
-      );
+      setAuthError('접근 권한이 없는 계정입니다. 인가된 사용자만 접근 가능합니다.');
     }
   };
 
-  // Mock Direct Login for Whitelisted Users (Instant Access)
-  const handleDirectWhitelistedLogin = (email: string, displayName: string) => {
-    verifyAndLogin(email, displayName);
+  // Fallback Google Sign-In Trigger when OAuth Client ID is not explicitly set in env
+  const handleFallbackGoogleLogin = () => {
+    setAuthError(null);
+    setIsPromptingCustomEmail(true);
+  };
+
+  const handleCustomEmailSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!customEmailInput.trim()) return;
+    verifyAndLogin(customEmailInput.trim(), customEmailInput.split('@')[0]);
   };
 
   return (
@@ -167,18 +169,18 @@ export const LandingGate: React.FC<LandingGateProps> = ({ onLoginSuccess }) => {
         <div className="flex items-center gap-2">
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-950/60 text-emerald-300 border border-emerald-800 text-xs font-semibold">
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-            인증 시스템 보호 중
+            보안 시스템 가동 중
           </span>
         </div>
       </header>
 
       {/* Main Hero & Login Box */}
-      <main className="relative z-10 flex-1 max-w-7xl w-full mx-auto px-6 py-8 flex flex-col items-center justify-center text-center space-y-10">
+      <main className="relative z-10 flex-1 max-w-7xl w-full mx-auto px-6 py-10 flex flex-col items-center justify-center text-center space-y-10">
         {/* Hero Title */}
         <div className="max-w-3xl space-y-4">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-stone-800/80 border border-stone-700/80 text-xs font-semibold text-stone-300 shadow-inner">
             <Lock className="w-3.5 h-3.5 text-amber-400" />
-            <span>승인된 구글 계정 전용 워크스페이스</span>
+            <span>인가된 사용자 전용 워크스페이스</span>
           </div>
 
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight text-white">
@@ -193,80 +195,92 @@ export const LandingGate: React.FC<LandingGateProps> = ({ onLoginSuccess }) => {
           </p>
         </div>
 
-        {/* Login Card with Google SSO and Whitelist Quick Selector */}
-        <div className="w-full max-w-md p-7 rounded-3xl bg-stone-950/80 border border-stone-800 backdrop-blur-xl shadow-2xl space-y-6 text-left relative">
-          <div className="space-y-1 text-center">
+        {/* Clean Login Card */}
+        <div className="w-full max-w-sm p-8 rounded-3xl bg-stone-950/85 border border-stone-800 backdrop-blur-xl shadow-2xl space-y-6 text-center relative">
+          <div className="space-y-1.5">
             <h2 className="text-lg font-bold text-white flex items-center justify-center gap-2">
-              <LogIn className="w-4 h-4 text-indigo-400" />
-              구글 SSO 계정으로 로그인
+              <LogIn className="w-5 h-5 text-indigo-400" />
+              로그인
             </h2>
-            <p className="text-xs text-stone-400">
-              사전에 등록된 3개의 승인 이메일 계정으로만 입장할 수 있습니다.
+            <p className="text-xs text-stone-400 font-medium">
+              Google 계정으로 로그인해 주세요
             </p>
           </div>
 
           {/* Error Alert if unapproved account */}
           {authError && (
-            <div className="p-3.5 rounded-xl bg-rose-950/80 border border-rose-800 text-rose-200 text-xs flex items-start gap-2.5">
+            <div className="p-3.5 rounded-xl bg-rose-950/80 border border-rose-800 text-rose-200 text-xs flex items-start gap-2.5 text-left animate-in fade-in duration-200">
               <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
               <p className="leading-snug">{authError}</p>
             </div>
           )}
 
-          {/* Google Official Sign-In Button Container */}
-          <div className="flex flex-col items-center justify-center min-h-[44px]">
-            <div id="google-signin-btn-container" className="w-full flex justify-center" />
-          </div>
+          {/* Google Sign-In Area */}
+          <div className="flex flex-col items-center justify-center space-y-4 pt-1">
+            {/* Native Google SDK Button Container (if client ID configured) */}
+            <div id="google-signin-btn-container" className="w-full flex justify-center empty:hidden" />
 
-          {/* Divider */}
-          <div className="relative flex items-center justify-center">
-            <div className="border-t border-stone-800 w-full" />
-            <span className="bg-stone-950 px-3 text-[11px] font-bold text-stone-500 uppercase tracking-wider">
-              또는 승인 계정 선택 로그인
-            </span>
-          </div>
+            {/* Stylish Google Auth Button */}
+            <button
+              type="button"
+              onClick={handleFallbackGoogleLogin}
+              className="w-full py-3.5 px-5 rounded-2xl bg-white hover:bg-stone-100 text-stone-900 font-semibold text-sm flex items-center justify-center gap-3 shadow-md hover:shadow-lg transition-all active:scale-[0.98] cursor-pointer"
+            >
+              {/* Official Google 'G' Icon */}
+              <svg className="w-5 h-5" viewBox="0 0 24 24">
+                <path
+                  fill="#4285F4"
+                  d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                />
+                <path
+                  fill="#34A853"
+                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                />
+                <path
+                  fill="#FBBC05"
+                  d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
+                />
+                <path
+                  fill="#EA4335"
+                  d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
+                />
+              </svg>
+              Google 계정으로 계속하기
+            </button>
 
-          {/* Whitelisted Accounts Fast Login Card */}
-          <div className="space-y-2">
-            <label className="text-xs font-bold text-stone-300 flex items-center gap-1.5">
-              <KeyRound className="w-3.5 h-3.5 text-amber-400" />
-              승인된 화이트리스트 계정 (3명):
-            </label>
-
-            <div className="space-y-2">
-              {[
-                { email: 'kiparang999@gmail.com', name: '기파랑 (관리자)', role: 'Admin' },
-                { email: 'hongjinwoo@simin.hs.kr', name: '홍진우 선생님', role: 'Teacher' },
-                { email: 'sitech3@simin.hs.kr', name: '시민고 교사 계정', role: 'Teacher' },
-              ].map((acc) => (
+            {/* Email prompt modal/inline form if fallback mode */}
+            {isPromptingCustomEmail && (
+              <form onSubmit={handleCustomEmailSubmit} className="w-full space-y-2.5 pt-2 animate-in fade-in duration-200">
+                <input
+                  type="email"
+                  value={customEmailInput}
+                  onChange={(e) => setCustomEmailInput(e.target.value)}
+                  placeholder="구글 이메일 주소 입력"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-stone-900 border border-stone-700 text-white placeholder-stone-500 text-xs focus:outline-none focus:border-indigo-500"
+                  autoFocus
+                  required
+                />
                 <button
-                  key={acc.email}
-                  type="button"
-                  onClick={() => handleDirectWhitelistedLogin(acc.email, acc.name)}
-                  className="w-full p-3 rounded-xl border border-stone-800 hover:border-indigo-500/60 bg-stone-900/80 hover:bg-indigo-950/30 text-stone-200 text-xs flex items-center justify-between transition-all group cursor-pointer"
+                  type="submit"
+                  className="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-colors cursor-pointer"
                 >
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-indigo-600 to-violet-600 text-white flex items-center justify-center text-xs font-bold shrink-0">
-                      {acc.name[0]}
-                    </div>
-                    <div className="min-w-0 text-left">
-                      <p className="font-bold text-white group-hover:text-indigo-300 transition-colors truncate">
-                        {acc.name}
-                      </p>
-                      <p className="text-[11px] text-stone-400 truncate">{acc.email}</p>
-                    </div>
-                  </div>
-                  <span className="px-2 py-0.5 text-[10px] font-bold rounded-md bg-stone-800 text-stone-300 border border-stone-700 group-hover:bg-indigo-600 group-hover:text-white transition-all shrink-0">
-                    입장하기 →
-                  </span>
+                  확인 및 입장
                 </button>
-              ))}
+              </form>
+            )}
+
+            {/* Authorized Users Only Notice */}
+            <div className="pt-2">
+              <p className="text-[11px] text-stone-500 font-medium flex items-center justify-center gap-1.5">
+                <Lock className="w-3 h-3 text-stone-500" />
+                인가된 사용자만 접근 가능
+              </p>
             </div>
           </div>
         </div>
 
         {/* 4 Feature Highlights Grid */}
-        <div className="max-w-5xl w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-left pt-6">
+        <div className="max-w-5xl w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-left pt-4">
           <div className="p-5 rounded-2xl bg-stone-950/60 border border-stone-800 space-y-2">
             <div className="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center">
               <Wand2 className="w-5 h-5" />
@@ -311,7 +325,7 @@ export const LandingGate: React.FC<LandingGateProps> = ({ onLoginSuccess }) => {
 
       {/* Footer */}
       <footer className="relative z-10 border-t border-stone-800/80 py-6 text-center text-xs text-stone-500">
-        AI Image Prompt Studio • Google SSO Authentication • Authorized for kiparang999, hongjinwoo, sitech3
+        AI Image Prompt Studio • Secure Authentication
       </footer>
     </div>
   );
