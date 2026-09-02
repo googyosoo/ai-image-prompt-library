@@ -9,12 +9,18 @@ import {
   SlidersHorizontal,
   AlertCircle,
   LogIn,
+  Loader2,
 } from 'lucide-react';
 import { AuthUser, ALLOWED_EMAILS } from '../types';
 
 interface LandingGateProps {
   onLoginSuccess: (user: AuthUser) => void;
 }
+
+// Fallback/Default Google OAuth 2.0 Client ID
+const DEFAULT_GOOGLE_CLIENT_ID =
+  (import.meta as any).env?.VITE_GOOGLE_CLIENT_ID ||
+  '1038575005988-s4c8s9kff4h3u9lcfdcvg0439g6oou1g.apps.googleusercontent.com';
 
 // Helper to decode JWT token from Google Identity Services
 function parseJwt(token: string): any {
@@ -35,9 +41,8 @@ function parseJwt(token: string): any {
 
 export const LandingGate: React.FC<LandingGateProps> = ({ onLoginSuccess }) => {
   const [authError, setAuthError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const [isGoogleSdkReady, setIsGoogleSdkReady] = useState(false);
-  const [isPromptingCustomEmail, setIsPromptingCustomEmail] = useState(false);
-  const [customEmailInput, setCustomEmailInput] = useState('');
 
   // Load Google Identity Services SDK
   useEffect(() => {
@@ -57,23 +62,16 @@ export const LandingGate: React.FC<LandingGateProps> = ({ onLoginSuccess }) => {
     document.body.appendChild(script);
   }, []);
 
-  // Initialize Google Button when SDK is ready
+  // Initialize Google Sign-In SDK
   useEffect(() => {
     if (!isGoogleSdkReady || !(window as any).google) return;
 
-    const clientId =
-      (import.meta as any).env?.VITE_GOOGLE_CLIENT_ID ||
-      '';
-
-    if (!clientId) {
-      return; // Fallback to custom stylish Google login trigger if no client ID is configured
-    }
-
     try {
       (window as any).google.accounts.id.initialize({
-        client_id: clientId,
+        client_id: DEFAULT_GOOGLE_CLIENT_ID,
         callback: handleGoogleCredentialResponse,
         auto_select: false,
+        cancel_on_tap_outside: true,
       });
 
       const btnContainer = document.getElementById('google-signin-btn-container');
@@ -94,8 +92,9 @@ export const LandingGate: React.FC<LandingGateProps> = ({ onLoginSuccess }) => {
     }
   }, [isGoogleSdkReady]);
 
-  // Handle Google Token Response
+  // Handle Google Token Response (One-Tap / Standard GSI)
   const handleGoogleCredentialResponse = (response: any) => {
+    setIsLoading(false);
     setAuthError(null);
     if (!response || !response.credential) {
       setAuthError('구글 인증 정보를 가져올 수 없습니다.');
@@ -128,16 +127,61 @@ export const LandingGate: React.FC<LandingGateProps> = ({ onLoginSuccess }) => {
     }
   };
 
-  // Fallback Google Sign-In Trigger when OAuth Client ID is not explicitly set in env
-  const handleFallbackGoogleLogin = () => {
+  // Google OAuth 2.0 Account Selection Popup (Direct SSO)
+  const handleGoogleSsoLogin = () => {
     setAuthError(null);
-    setIsPromptingCustomEmail(true);
-  };
+    setIsLoading(true);
 
-  const handleCustomEmailSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!customEmailInput.trim()) return;
-    verifyAndLogin(customEmailInput.trim(), customEmailInput.split('@')[0]);
+    try {
+      // 1. If google.accounts.oauth2 is ready, open official Google Account Chooser popup
+      if ((window as any).google?.accounts?.oauth2) {
+        const tokenClient = (window as any).google.accounts.oauth2.initTokenClient({
+          client_id: DEFAULT_GOOGLE_CLIENT_ID,
+          scope: 'https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile',
+          callback: async (tokenResponse: any) => {
+            if (tokenResponse && tokenResponse.access_token) {
+              try {
+                const userInfoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+                  headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
+                });
+                const userInfo = await userInfoRes.json();
+                if (userInfo && userInfo.email) {
+                  verifyAndLogin(userInfo.email, userInfo.name || userInfo.email.split('@')[0], userInfo.picture);
+                  return;
+                }
+              } catch (err: any) {
+                console.error('Error fetching Google userinfo:', err);
+                setAuthError('구글 계정 정보를 확인하는 중 오류가 발생했습니다.');
+              }
+            } else if (tokenResponse?.error) {
+              console.warn('Token error:', tokenResponse.error);
+            }
+            setIsLoading(false);
+          },
+          error_callback: (error: any) => {
+            console.warn('Google login popup closed or failed:', error);
+            setIsLoading(false);
+          },
+        });
+
+        tokenClient.requestAccessToken({ prompt: 'select_account' });
+        return;
+      }
+
+      // 2. Fallback to Google GSI prompt
+      if ((window as any).google?.accounts?.id) {
+        (window as any).google.accounts.id.prompt((notification: any) => {
+          if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+            setIsLoading(false);
+          }
+        });
+        return;
+      }
+    } catch (e: any) {
+      console.error('Google SSO error:', e);
+      setIsLoading(false);
+      setAuthError('구글 로그인 창을 여는 중 문제가 발생했습니다. 다시 시도해 주세요.');
+    }
   };
 
   return (
@@ -215,59 +259,41 @@ export const LandingGate: React.FC<LandingGateProps> = ({ onLoginSuccess }) => {
             </div>
           )}
 
-          {/* Google Sign-In Area */}
+          {/* Google SSO Login Button */}
           <div className="flex flex-col items-center justify-center space-y-4 pt-1">
-            {/* Native Google SDK Button Container (if client ID configured) */}
-            <div id="google-signin-btn-container" className="w-full flex justify-center empty:hidden" />
-
-            {/* Stylish Google Auth Button */}
             <button
               type="button"
-              onClick={handleFallbackGoogleLogin}
-              className="w-full py-3.5 px-5 rounded-2xl bg-white hover:bg-stone-100 text-stone-900 font-semibold text-sm flex items-center justify-center gap-3 shadow-md hover:shadow-lg transition-all active:scale-[0.98] cursor-pointer"
+              onClick={handleGoogleSsoLogin}
+              disabled={isLoading}
+              className="w-full py-3.5 px-5 rounded-2xl bg-white hover:bg-stone-100 text-stone-900 font-semibold text-sm flex items-center justify-center gap-3 shadow-md hover:shadow-lg transition-all active:scale-[0.98] cursor-pointer disabled:opacity-75"
             >
-              {/* Official Google 'G' Icon */}
-              <svg className="w-5 h-5" viewBox="0 0 24 24">
-                <path
-                  fill="#4285F4"
-                  d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                />
-                <path
-                  fill="#34A853"
-                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                />
-                <path
-                  fill="#FBBC05"
-                  d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
-                />
-                <path
-                  fill="#EA4335"
-                  d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
-                />
-              </svg>
-              Google 계정으로 계속하기
+              {isLoading ? (
+                <Loader2 className="w-5 h-5 animate-spin text-stone-700" />
+              ) : (
+                <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24">
+                  <path
+                    fill="#4285F4"
+                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                  />
+                  <path
+                    fill="#34A853"
+                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                  />
+                  <path
+                    fill="#FBBC05"
+                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
+                  />
+                  <path
+                    fill="#EA4335"
+                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
+                  />
+                </svg>
+              )}
+              {isLoading ? '구글 계정 확인 중...' : 'Google 계정으로 계속하기'}
             </button>
 
-            {/* Email prompt modal/inline form if fallback mode */}
-            {isPromptingCustomEmail && (
-              <form onSubmit={handleCustomEmailSubmit} className="w-full space-y-2.5 pt-2 animate-in fade-in duration-200">
-                <input
-                  type="email"
-                  value={customEmailInput}
-                  onChange={(e) => setCustomEmailInput(e.target.value)}
-                  placeholder="구글 이메일 주소 입력"
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-stone-900 border border-stone-700 text-white placeholder-stone-500 text-xs focus:outline-none focus:border-indigo-500"
-                  autoFocus
-                  required
-                />
-                <button
-                  type="submit"
-                  className="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-colors cursor-pointer"
-                >
-                  확인 및 입장
-                </button>
-              </form>
-            )}
+            {/* Hidden Native GSI Render Container for auto-prompt if desired */}
+            <div id="google-signin-btn-container" className="hidden" />
 
             {/* Authorized Users Only Notice */}
             <div className="pt-2">
