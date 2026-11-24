@@ -1,13 +1,14 @@
 import { GoogleGenAI } from '@google/genai';
 
-function getGeminiClient(): GoogleGenAI | null {
+function getGeminiClient(customKey?: string): GoogleGenAI | null {
   const rawKey =
+    customKey ||
     process.env.GEMINI_API_KEY ||
     process.env.VITE_GEMINI_API_KEY ||
     process.env.GOOGLE_API_KEY ||
     '';
 
-  const apiKey = rawKey.trim().replace(/^["']|["']$/g, '');
+  const apiKey = (rawKey || '').trim().replace(/^["']|["']$/g, '');
 
   if (!apiKey || apiKey === 'MY_GEMINI_API_KEY' || apiKey.length < 10) {
     return null;
@@ -29,10 +30,15 @@ export default async function handler(req: any, res: any) {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
-  const { idea = '', style = '', category = '', targetModel = 'Nano Banana (Gemini)' } = req.body || {};
+  const { idea = '', style = '', category = '', targetModel = 'Nano Banana (Gemini)', apiKey: bodyApiKey } = req.body || {};
+  const customKey =
+    (req.headers['x-gemini-api-key'] as string) ||
+    (req.headers['authorization'] ? (req.headers['authorization'] as string).replace(/^Bearer\s+/i, '') : '') ||
+    bodyApiKey ||
+    '';
 
   try {
-    const ai = getGeminiClient();
+    const ai = getGeminiClient(customKey);
     if (!ai) {
       const enhancedEnglish = `Masterpiece detailed visual of ${idea}, professional studio lighting, rich volumetric depth, 8k resolution, award-winning composition, shot on 35mm prime lens, clean photorealistic rendering`;
       const koreanDesc = `입력하신 아이디어 "${idea}"를 기반으로 ${style || '시네마틱'} 스타일과 전문 조명/카메라 설정을 결합한 고품질 프롬프트입니다.`;

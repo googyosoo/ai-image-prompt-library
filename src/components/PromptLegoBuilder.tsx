@@ -36,12 +36,14 @@ interface PromptLegoBuilderProps {
   onCopy: (text: string, title: string) => void;
   onSendToCompare: (promptText: string, title: string, slotId: 'A' | 'B') => void;
   initialBlockIds?: string[];
+  userApiKey?: string;
 }
 
 export const PromptLegoBuilder: React.FC<PromptLegoBuilderProps> = ({
   onCopy,
   onSendToCompare,
   initialBlockIds,
+  userApiKey,
 }) => {
   // Selected Block IDs
   const [selectedBlockIds, setSelectedBlockIds] = useState<string[]>(() => {
@@ -261,11 +263,15 @@ export const PromptLegoBuilder: React.FC<PromptLegoBuilderProps> = ({
     try {
       const res = await fetch('/api/generate-image', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(userApiKey ? { 'x-gemini-api-key': userApiKey } : {}),
+        },
         body: JSON.stringify({
           prompt: assembledPrompt,
           aspectRatio,
           negativePrompt: recommendedNegativePrompt,
+          apiKey: userApiKey,
         }),
       });
 

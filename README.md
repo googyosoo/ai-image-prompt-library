@@ -1,20 +1,91 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
-</div>
+# 🎨 AI 이미지 프롬프트 라이브러리 & 스튜디오 (교사용 가이드)
 
-# Run and deploy your AI Studio app
+> **수업 자료, 교과 삽화, 활동지 그림, 포스터, 마스코트를 손쉽게 생성하는 초·중·고 교사용 AI 프롬프트 라이브러리**  
+> 배포 주소: [https://ai-image-prompt-library.vercel.app](https://ai-image-prompt-library.vercel.app)
 
-This contains everything you need to run your app locally.
+---
 
-View your app in AI Studio: https://ai.studio/apps/931a793d-5ce0-46ba-8eac-f00182101263
+## 📌 주요 특징
 
-## Run Locally
+1. **원클릭 인가 로그인**:
+   - 교육청/학교 인가된 구글 계정으로 1초 만에 안전하게 입장할 수 있습니다.
+2. **수업 특화 4대 카테고리**:
+   - **교과 삽화**: 과학 원리 도해, 역사적 인물·사건, 지리 지형, 문학 장면 등
+   - **포스터**: 독서 행사, 환경의 날, 학교 축제, 안전 수칙 홍보 포스터
+   - **학습지 그림**: 학생 활동지 삽화, 색칠 공부(Coloring sheet), 흑백 클립아트
+   - **캐릭터**: 학급 마스코트, 프로젝트 대표 캐릭터, 동화 속 동물 친구들
+3. **국내 최초 듀얼 복사(Dual Copy) 버튼**:
+   - 🇺🇸 **영문 프롬프트 복사**: Midjourney, DALL-E 3, Stable Diffusion, Ideogram 등 글로벌 AI 이미지 생성기에 최적화된 프롬프트
+   - 🇰🇷 **한글 프롬프트/설명 복사**: 국내 AI 서비스(뤼튼, 캔바 등) 입력용 및 교사용 수업 지도안 메모
+4. **15,385+ 실시간 프롬프트 라이브러리**:
+   - GitHub 오픈랩 저장소와 실시간 연동되어 방대한 전문가급 프롬프트를 즉시 검색하고 활용할 수 있습니다.
+5. **BYOK(Bring Your Own Key) 개인 API 키 지원**:
+   - 학교 서버나 외부 유출 걱정 없이, 본인의 Google Gemini API 키를 브라우저 로컬 저장소에 보관하여 안전하게 실시간 테스트 생성을 진행할 수 있습니다.
 
-**Prerequisites:**  Node.js
+---
 
+## 🚀 빠른 시작 가이드 (교사용 3단계)
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+### 1단계: 로그인하기
+1. 사이트([https://ai-image-prompt-library.vercel.app](https://ai-image-prompt-library.vercel.app))에 접속합니다.
+2. 메인 화면의 **「Google 계정으로 계속하기」** 버튼을 클릭하여 인가된 구글 계정을 선택합니다.
+
+### 2단계: 프롬프트 탐색 및 복사
+1. **상단 검색창 및 카테고리 필터**:
+   - 상단 카테고리 중 **[교과 삽화]**, **[포스터]**, **[학습지 그림]**, **[캐릭터]** 뱃지를 클릭하면 수업 맞춤형 예시가 정렬됩니다.
+2. **원클릭 복사**:
+   - 카드 하단의 **[🇺🇸 영문 복사]** 또는 **[🇰🇷 한글 복사]**를 클릭하면 즉시 클립보드에 저장됩니다.
+   - 자주 사용하는 프롬프트는 우측 상단의 **하트(❤️)**를 눌러 즐겨찾기에 등록하세요.
+
+### 3단계: 나만의 프롬프트 제작 & 테스트
+- **초보자 마법사 (Wizard)**: 4단계 객관식 질문에 답하면 전문가급 프롬프트가 자동 조립됩니다.
+- **프롬프트 레고 블록 (Builder)**: 피사체, 카메라 앵글, 조명, 예술 화풍 블록을 레고처럼 클릭하여 결합합니다.
+- **A/B 비교 스튜디오 (Compare)**: 두 개의 서로 다른 스타일 프롬프트와 생성 결과를 나란히 슬라이더로 비교합니다.
+- **비전 역공학 (Image-to-Prompt)**: 수업 참고 이미지를 업로드하면 AI가 유사한 그림을 만들어내는 영문 프롬프트를 역추출해 줍니다.
+
+---
+
+## 🔑 개인 Gemini API 키(BYOK) 등록 방법
+
+본 서비스의 실시간 이미지 생성 및 프롬프트 인핸서 기능을 이용하려면 본인의 Gemini API 키를 등록해야 합니다:
+
+1. [Google AI Studio](https://aistudio.google.com/app/apikey)에 접속하여 무료 API 키를 발급받습니다.
+2. 상단 우측 헤더의 **[🔑 API 키]** 버튼을 클릭합니다.
+3. 발급받은 키(`AIza...`)를 붙여넣고 **[저장하기]**를 누릅니다.
+4. 키는 브라우저 내부(LocalStorage)에만 안전하게 보관되며 외부 서버로 절대 유출되지 않습니다.
+
+---
+
+## 🛠️ 개발 및 로컬 실행 가이드 (개발자용)
+
+### 사전 요구사항
+- Node.js 18.0 이상
+- npm 또는 pnpm
+
+### 설치 및 로컬 서버 실행
+```bash
+# 1. 의존성 패키지 설치
+npm install
+
+# 2. 로컬 개발 환경 변수 설정 (.env.local)
+cp .env.example .env.local
+# GEMINI_API_KEY=your_gemini_api_key_here (선택)
+
+# 3. 로컬 개발 서버 실행 (프론트엔드 + API 라우터)
+npm run dev
+```
+
+### 정적 검증 및 빌드
+```bash
+# TypeScript 타입 검사
+npm run lint
+
+# 프로덕션 빌드 (Vite)
+npm run build
+```
+
+---
+
+## 📋 라이선스 및 크레딧
+- 프롬프트 데이터베이스: [YouMind-OpenLab/ai-image-prompts-skill](https://github.com/YouMind-OpenLab/ai-image-prompts-skill) 실시간 연동
+- 모든 교사용 교육 목적 활용을 환영합니다.

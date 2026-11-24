@@ -33,7 +33,8 @@ export const PromptDetailModal: React.FC<PromptDetailModalProps> = ({
 }) => {
   if (!prompt) return null;
 
-  const [copiedPrompt, setCopiedPrompt] = useState(false);
+  const [copiedPromptEn, setCopiedPromptEn] = useState(false);
+  const [copiedPromptKo, setCopiedPromptKo] = useState(false);
   const [copiedNegative, setCopiedNegative] = useState(false);
   const [includeMidjourneyFlags, setIncludeMidjourneyFlags] = useState(false);
   const [customValues, setCustomValues] = useState<Record<string, string>>(() => {
@@ -60,11 +61,18 @@ export const PromptDetailModal: React.FC<PromptDetailModalProps> = ({
     return result;
   };
 
-  const handleCopyPrompt = () => {
+  const handleCopyEnglish = () => {
     const text = getSynthesizedPrompt();
-    onCopy(text, prompt.koreanTitle);
-    setCopiedPrompt(true);
-    setTimeout(() => setCopiedPrompt(false), 2000);
+    onCopy(text, `${prompt.koreanTitle} (영어)`);
+    setCopiedPromptEn(true);
+    setTimeout(() => setCopiedPromptEn(false), 2000);
+  };
+
+  const handleCopyKorean = () => {
+    const koreanText = `[${prompt.koreanTitle}]\n${prompt.koreanDescription}\n\n* 카테고리: ${prompt.category}\n* 스타일: ${prompt.style}\n* 추천 비율: ${prompt.recommendedAspectRatio}\n* 태그: ${prompt.tags.join(', ')}`;
+    onCopy(koreanText, `${prompt.koreanTitle} (한국어 안내)`);
+    setCopiedPromptKo(true);
+    setTimeout(() => setCopiedPromptKo(false), 2000);
   };
 
   const handleCopyNegative = () => {
@@ -331,28 +339,55 @@ export const PromptDetailModal: React.FC<PromptDetailModalProps> = ({
             </button>
           </div>
 
-          <button
-            type="button"
-            onClick={handleCopyPrompt}
-            className={`w-full sm:w-auto px-6 py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center justify-center gap-2 shadow-xs ${
-              copiedPrompt
-                ? 'bg-emerald-600 text-white'
-                : 'bg-stone-900 dark:bg-stone-100 text-white dark:text-zinc-950 hover:bg-stone-800 dark:hover:bg-white'
-            }`}
-            id="modal-copy-btn"
-          >
-            {copiedPrompt ? (
-              <>
-                <Check className="w-4 h-4 text-white" />
-                <span>복사되었습니다!</span>
-              </>
-            ) : (
-              <>
-                <Copy className="w-4 h-4" />
-                <span>프롬프트 복사하기</span>
-              </>
-            )}
-          </button>
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            {/* English Copy */}
+            <button
+              type="button"
+              onClick={handleCopyEnglish}
+              className={`flex-1 sm:flex-none px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center justify-center gap-1.5 shadow-xs cursor-pointer ${
+                copiedPromptEn
+                  ? 'bg-emerald-600 text-white'
+                  : 'bg-stone-900 dark:bg-stone-100 text-white dark:text-zinc-950 hover:bg-stone-800 dark:hover:bg-white'
+              }`}
+              id="modal-copy-en-btn"
+            >
+              {copiedPromptEn ? (
+                <>
+                  <Check className="w-4 h-4 text-white" />
+                  <span>영문 복사 완료!</span>
+                </>
+              ) : (
+                <>
+                  <Copy className="w-4 h-4" />
+                  <span>🇺🇸 영문 프롬프트 복사</span>
+                </>
+              )}
+            </button>
+
+            {/* Korean Copy */}
+            <button
+              type="button"
+              onClick={handleCopyKorean}
+              className={`flex-1 sm:flex-none px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold border transition-all flex items-center justify-center gap-1.5 shadow-xs cursor-pointer ${
+                copiedPromptKo
+                  ? 'bg-emerald-600 text-white border-emerald-600'
+                  : 'border-stone-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-stone-800 dark:text-zinc-200 hover:bg-stone-100 dark:hover:bg-zinc-700'
+              }`}
+              id="modal-copy-ko-btn"
+            >
+              {copiedPromptKo ? (
+                <>
+                  <Check className="w-4 h-4 text-white" />
+                  <span>한글 복사 완료!</span>
+                </>
+              ) : (
+                <>
+                  <Copy className="w-4 h-4 text-indigo-500" />
+                  <span>🇰🇷 한글 안내 복사</span>
+                </>
+              )}
+            </button>
+          </div>
         </div>
       </div>
     </div>

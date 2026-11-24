@@ -8,7 +8,7 @@ import {
   ChevronDown,
   ChevronUp,
   Maximize2,
-  Share2
+  Tag
 } from 'lucide-react';
 import { PromptItem } from '../types';
 
@@ -19,6 +19,7 @@ interface PromptCardProps {
   onOpenDetail: (prompt: PromptItem) => void;
   isFavorite: boolean;
   onToggleFavorite: (id: string) => void;
+  onSelectTag?: (tag: string) => void;
 }
 
 export const PromptCard: React.FC<PromptCardProps> = ({
@@ -28,8 +29,10 @@ export const PromptCard: React.FC<PromptCardProps> = ({
   onOpenDetail,
   isFavorite,
   onToggleFavorite,
+  onSelectTag,
 }) => {
-  const [copied, setCopied] = useState(false);
+  const [copiedEn, setCopiedEn] = useState(false);
+  const [copiedKo, setCopiedKo] = useState(false);
   const [showVariables, setShowVariables] = useState(false);
   const [customValues, setCustomValues] = useState<Record<string, string>>(() => {
     const initial: Record<string, string> = {};
@@ -52,12 +55,22 @@ export const PromptCard: React.FC<PromptCardProps> = ({
     return result;
   };
 
-  const handleCopyPrompt = (e: React.MouseEvent) => {
+  // 1. 영어 프롬프트 복사
+  const handleCopyEnglish = (e: React.MouseEvent) => {
     e.stopPropagation();
     const textToCopy = getSynthesizedPrompt();
-    onCopy(textToCopy, prompt.koreanTitle);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    onCopy(textToCopy, `${prompt.koreanTitle} (영어)`);
+    setCopiedEn(true);
+    setTimeout(() => setCopiedEn(false), 2000);
+  };
+
+  // 2. 한국어 프롬프트/설명 복사
+  const handleCopyKorean = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const koreanText = `[${prompt.koreanTitle}]\n${prompt.koreanDescription}\n\n* 추천 비율: ${prompt.recommendedAspectRatio}\n* 태그: ${prompt.tags.join(', ')}`;
+    onCopy(koreanText, `${prompt.koreanTitle} (한국어 안내)`);
+    setCopiedKo(true);
+    setTimeout(() => setCopiedKo(false), 2000);
   };
 
   return (
@@ -207,11 +220,32 @@ export const PromptCard: React.FC<PromptCardProps> = ({
           </div>
         )}
 
+        {/* Tags Chips Filter Bar */}
+        {prompt.tags && prompt.tags.length > 0 && (
+          <div className="flex flex-wrap gap-1 mb-3">
+            {prompt.tags.slice(0, 4).map((tag) => (
+              <button
+                key={tag}
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSelectTag?.(tag);
+                }}
+                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-medium bg-stone-100 hover:bg-indigo-50 dark:bg-zinc-800 dark:hover:bg-indigo-950 text-stone-600 hover:text-indigo-600 dark:text-zinc-400 dark:hover:text-indigo-400 border border-stone-200/80 dark:border-zinc-700/60 transition-colors cursor-pointer"
+                title={`'${tag}' 태그로 검색`}
+              >
+                <Tag className="w-2.5 h-2.5 text-stone-400 group-hover:text-indigo-500" />
+                <span>{tag}</span>
+              </button>
+            ))}
+          </div>
+        )}
+
         {/* Model Compatibility Badges & Ratio */}
-        <div className="flex items-center justify-between gap-1 mb-4 text-[11px] text-stone-500 dark:text-zinc-400">
+        <div className="flex items-center justify-between gap-1 mb-3 text-[11px] text-stone-500 dark:text-zinc-400">
           <div className="flex items-center gap-1 overflow-hidden">
-            <span className="font-semibold text-stone-400 dark:text-zinc-500">추천:</span>
-            <span className="px-1.5 py-0.5 rounded-md bg-stone-100 dark:bg-zinc-800 text-stone-700 dark:text-zinc-300 font-mono">
+            <span className="font-semibold text-stone-400 dark:text-zinc-500">추천 비율:</span>
+            <span className="px-1.5 py-0.5 rounded-md bg-stone-100 dark:bg-zinc-800 text-stone-700 dark:text-zinc-300 font-mono text-[10px]">
               {prompt.recommendedAspectRatio}
             </span>
           </div>
@@ -222,60 +256,91 @@ export const PromptCard: React.FC<PromptCardProps> = ({
           </div>
         </div>
 
-        {/* Action Button Row: One-Click Copy & Compare Send */}
-        <div className="flex items-center gap-2 pt-2 border-t border-stone-100 dark:border-zinc-800">
-          {/* Primary One-Click Copy Button */}
-          <button
-            type="button"
-            onClick={handleCopyPrompt}
-            className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-semibold transition-all ${
-              copied
-                ? 'bg-emerald-600 text-white shadow-xs scale-[0.98]'
-                : 'bg-stone-900 dark:bg-stone-100 text-white dark:text-zinc-950 hover:bg-stone-800 dark:hover:bg-white shadow-xs active:scale-[0.98]'
-            }`}
-            id={`copy-btn-${prompt.id}`}
-          >
-            {copied ? (
-              <>
-                <Check className="w-3.5 h-3.5 text-white" />
-                <span>복사 완료!</span>
-              </>
-            ) : (
-              <>
-                <Copy className="w-3.5 h-3.5" />
-                <span>프롬프트 복사</span>
-              </>
-            )}
-          </button>
+        {/* Action Button Row: Dual Copy (Korean / English) & Compare Send */}
+        <div className="space-y-2 pt-2 border-t border-stone-100 dark:border-zinc-800">
+          <div className="grid grid-cols-2 gap-1.5">
+            {/* 1. English Prompt Copy Button */}
+            <button
+              type="button"
+              onClick={handleCopyEnglish}
+              className={`flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                copiedEn
+                  ? 'bg-emerald-600 text-white shadow-xs scale-[0.98]'
+                  : 'bg-stone-900 dark:bg-stone-100 text-white dark:text-zinc-950 hover:bg-stone-800 dark:hover:bg-white shadow-xs active:scale-[0.98]'
+              }`}
+              id={`copy-en-btn-${prompt.id}`}
+              title="AI 이미지 도구(미드저니/달리)에 넣을 영문 프롬프트 복사"
+            >
+              {copiedEn ? (
+                <>
+                  <Check className="w-3.5 h-3.5 text-white" />
+                  <span className="truncate">영문 완료!</span>
+                </>
+              ) : (
+                <>
+                  <Copy className="w-3.5 h-3.5" />
+                  <span className="truncate">🇺🇸 영문 복사</span>
+                </>
+              )}
+            </button>
 
-          {/* Send to Compare Studio Slot Picker */}
-          <div className="flex items-center gap-1">
+            {/* 2. Korean Description / Prompt Copy Button */}
             <button
               type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                onSendToCompare(prompt, 'A');
-              }}
-              title="비교 슬롯 A로 보내기"
-              className="px-2.5 py-2.5 rounded-xl border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800/60 hover:bg-indigo-50 dark:hover:bg-indigo-950/60 text-stone-700 dark:text-zinc-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-200 dark:hover:border-indigo-800 text-xs font-semibold transition-colors flex items-center gap-1"
-              id={`send-compare-a-${prompt.id}`}
+              onClick={handleCopyKorean}
+              className={`flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${
+                copiedKo
+                  ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs scale-[0.98]'
+                  : 'border-stone-200 dark:border-zinc-700 bg-stone-50 dark:bg-zinc-800/80 hover:bg-stone-100 dark:hover:bg-zinc-700 text-stone-800 dark:text-zinc-200 active:scale-[0.98]'
+              }`}
+              id={`copy-ko-btn-${prompt.id}`}
+              title="교재/학생 지도용 한국어 설명 및 제목 복사"
             >
-              <Layers className="w-3.5 h-3.5" />
-              <span>A</span>
+              {copiedKo ? (
+                <>
+                  <Check className="w-3.5 h-3.5 text-white" />
+                  <span className="truncate">한글 완료!</span>
+                </>
+              ) : (
+                <>
+                  <Copy className="w-3.5 h-3.5 text-indigo-500" />
+                  <span className="truncate">🇰🇷 한글 복사</span>
+                </>
+              )}
             </button>
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                onSendToCompare(prompt, 'B');
-              }}
-              title="비교 슬롯 B로 보내기"
-              className="px-2.5 py-2.5 rounded-xl border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800/60 hover:bg-violet-50 dark:hover:bg-violet-950/60 text-stone-700 dark:text-zinc-300 hover:text-violet-600 dark:hover:text-violet-400 hover:border-violet-200 dark:hover:border-violet-800 text-xs font-semibold transition-colors flex items-center gap-1"
-              id={`send-compare-b-${prompt.id}`}
-            >
-              <Layers className="w-3.5 h-3.5" />
-              <span>B</span>
-            </button>
+          </div>
+
+          {/* Send to Compare Studio Slot Picker (Slot A / Slot B) */}
+          <div className="flex items-center justify-between gap-1 text-[11px] text-stone-500 dark:text-zinc-400 px-0.5">
+            <span className="text-[10px] text-stone-400 dark:text-zinc-500">비교 스튜디오:</span>
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSendToCompare(prompt, 'A');
+                }}
+                title="비교 슬롯 A로 보내기"
+                className="px-2 py-1 rounded-lg border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800/60 hover:bg-indigo-50 dark:hover:bg-indigo-950/60 text-stone-700 dark:text-zinc-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-200 dark:hover:border-indigo-800 text-[10px] font-semibold transition-colors flex items-center gap-0.5 cursor-pointer"
+                id={`send-compare-a-${prompt.id}`}
+              >
+                <Layers className="w-3 h-3" />
+                <span>슬롯 A</span>
+              </button>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSendToCompare(prompt, 'B');
+                }}
+                title="비교 슬롯 B로 보내기"
+                className="px-2 py-1 rounded-lg border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800/60 hover:bg-violet-50 dark:hover:bg-violet-950/60 text-stone-700 dark:text-zinc-300 hover:text-violet-600 dark:hover:text-violet-400 hover:border-violet-200 dark:hover:border-violet-800 text-[10px] font-semibold transition-colors flex items-center gap-0.5 cursor-pointer"
+                id={`send-compare-b-${prompt.id}`}
+              >
+                <Layers className="w-3 h-3" />
+                <span>슬롯 B</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>

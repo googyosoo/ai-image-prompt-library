@@ -1,5 +1,9 @@
 export type UseCaseCategory =
   | 'All'
+  | '교과 삽화'
+  | '포스터'
+  | '학습지 그림'
+  | '캐릭터'
   | 'Profile / Avatar'
   | 'Social Media Post'
   | 'Product Marketing'
@@ -128,11 +132,11 @@ export interface AuthUser {
   isAuthenticated: boolean;
 }
 
-export const ALLOWED_EMAILS: string[] = [
-  'kiparang999@gmail.com',
-  'hongjinwoo@simin.hs.kr',
-  'sitech3@simin.hs.kr',
-];
+export const ALLOWED_EMAIL_HASHES: readonly string[] = [
+  '287fe2e072f918f9c0e0c64b07aa1841b900991ca921e50b504d9d1bad0246e5',
+  '3a1b3dfcc87ce6b2734a25f1d76ebf25076eafab342c57001248897a066c8fd3',
+  '0c79759c94241ea7b2d6794a920e5a5b69bcf0c3360073fa768b5c39954cbc79',
+] as const;
 
 
 

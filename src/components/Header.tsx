@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sparkles, SlidersHorizontal, Wand2, Sun, Moon, Bookmark, Compass, Blocks, Scan, LogOut, User } from 'lucide-react';
+import { Sparkles, SlidersHorizontal, Wand2, Sun, Moon, Bookmark, Compass, Blocks, Scan, LogOut, User, KeyRound } from 'lucide-react';
 import { ActiveTab, AuthUser } from '../types';
 
 interface HeaderProps {
@@ -13,6 +13,8 @@ interface HeaderProps {
   totalPromptsCount: number;
   user?: AuthUser | null;
   onLogout?: () => void;
+  apiKey?: string;
+  onOpenApiKeyModal?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -26,6 +28,8 @@ export const Header: React.FC<HeaderProps> = ({
   totalPromptsCount,
   user,
   onLogout,
+  apiKey,
+  onOpenApiKeyModal,
 }) => {
 
   return (
@@ -65,8 +69,8 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
           </div>
 
-          {/* Navigation Tabs */}
-          <nav className="flex items-center gap-1 sm:gap-2" id="main-navigation">
+          {/* Desktop Navigation Tabs (lg 이상) */}
+          <nav className="hidden lg:flex items-center gap-1 sm:gap-2" id="main-navigation">
             <button
               type="button"
               onClick={() => setActiveTab('library')}
@@ -100,7 +104,6 @@ export const Header: React.FC<HeaderProps> = ({
                 초보자 추천
               </span>
             </button>
-
 
             <button
               type="button"
@@ -166,8 +169,30 @@ export const Header: React.FC<HeaderProps> = ({
           </nav>
 
 
-          {/* Right Action Controls: Favorites Filter & Dark/Light Mode Toggle */}
-          <div className="flex items-center gap-2">
+          {/* Right Action Controls: BYOK, Favorites Filter & Dark/Light Mode Toggle */}
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+            {/* BYOK Gemini API Key Modal Button */}
+            {onOpenApiKeyModal && (
+              <button
+                type="button"
+                onClick={onOpenApiKeyModal}
+                className={`p-2 rounded-xl border text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
+                  apiKey
+                    ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300 shadow-xs'
+                    : 'border-stone-200 dark:border-zinc-800 text-stone-600 dark:text-zinc-400 hover:bg-stone-100 dark:hover:bg-zinc-800'
+                }`}
+                id="header-byok-btn"
+                title={apiKey ? '개인 Gemini API 키 적용 중 (클릭하여 변경)' : '개인 Gemini API 키 등록 (BYOK)'}
+                aria-label="API 키 설정"
+              >
+                <KeyRound className={`w-4 h-4 ${apiKey ? 'text-emerald-500' : 'text-amber-500'}`} />
+                <span className="hidden xl:inline">
+                  {apiKey ? 'BYOK 활성' : 'API 키'}
+                </span>
+                {apiKey && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />}
+              </button>
+            )}
+
             <button
               type="button"
               onClick={() => {
@@ -244,6 +269,87 @@ export const Header: React.FC<HeaderProps> = ({
               </div>
             )}
           </div>
+        </div>
+
+        {/* Mobile Navigation Bar (lg 미만 모바일 390px 전용 가로 스크롤) */}
+        <div className="lg:hidden flex items-center gap-1.5 px-2 py-2 overflow-x-auto no-scrollbar border-t border-stone-100 dark:border-zinc-800/80 -mx-4 sm:-mx-6 px-4">
+          <button
+            type="button"
+            onClick={() => setActiveTab('library')}
+            className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all shrink-0 ${
+              activeTab === 'library'
+                ? 'bg-stone-900 dark:bg-stone-100 text-white dark:text-zinc-950 shadow-xs'
+                : 'text-stone-600 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-zinc-200'
+            }`}
+          >
+            <Compass className="w-3.5 h-3.5 text-indigo-500" />
+            <span>보관소</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('wizard')}
+            className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all shrink-0 ${
+              activeTab === 'wizard'
+                ? 'bg-amber-500 text-white shadow-xs'
+                : 'text-stone-600 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-zinc-200'
+            }`}
+          >
+            <Wand2 className="w-3.5 h-3.5 text-amber-300" />
+            <span>마법사</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('vision')}
+            className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all shrink-0 ${
+              activeTab === 'vision'
+                ? 'bg-sky-600 text-white shadow-xs'
+                : 'text-stone-600 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-zinc-200'
+            }`}
+          >
+            <Scan className="w-3.5 h-3.5 text-sky-400" />
+            <span>비전</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('builder')}
+            className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all shrink-0 ${
+              activeTab === 'builder'
+                ? 'bg-emerald-600 text-white shadow-xs'
+                : 'text-stone-600 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-zinc-200'
+            }`}
+          >
+            <Blocks className="w-3.5 h-3.5 text-emerald-400" />
+            <span>블록 빌더</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('compare')}
+            className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all shrink-0 ${
+              activeTab === 'compare'
+                ? 'bg-violet-600 text-white shadow-xs'
+                : 'text-stone-600 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-zinc-200'
+            }`}
+          >
+            <SlidersHorizontal className="w-3.5 h-3.5 text-violet-400" />
+            <span>A/B 비교</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('remix')}
+            className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all shrink-0 ${
+              activeTab === 'remix'
+                ? 'bg-rose-600 text-white shadow-xs'
+                : 'text-stone-600 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-zinc-200'
+            }`}
+          >
+            <Wand2 className="w-3.5 h-3.5 text-rose-300" />
+            <span>리믹스</span>
+          </button>
         </div>
       </div>
     </header>

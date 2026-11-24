@@ -13,6 +13,8 @@ import {
   ExternalLink,
   ChevronLeft,
   ChevronRight,
+  Bookmark,
+  GraduationCap
 } from 'lucide-react';
 import { CATEGORIES, STYLES, AI_MODELS } from '../data/promptsData';
 import {
@@ -47,6 +49,9 @@ interface SearchBarProps {
   totalPages: number;
   onPageChange: (page: number) => void;
   onRefreshGitHub: () => void;
+  showFavoritesOnly?: boolean;
+  setShowFavoritesOnly?: (val: boolean) => void;
+  favoritesCount?: number;
 }
 
 export const SearchBar: React.FC<SearchBarProps> = ({
@@ -73,6 +78,9 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   totalPages,
   onPageChange,
   onRefreshGitHub,
+  showFavoritesOnly = false,
+  setShowFavoritesOnly,
+  favoritesCount = 0,
 }) => {
   const isFiltered =
     searchQuery.trim() !== '' ||
@@ -211,6 +219,26 @@ export const SearchBar: React.FC<SearchBarProps> = ({
             <Layers className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-stone-400 dark:text-zinc-500 pointer-events-none" />
           </div>
 
+          {/* Favorites Filter Quick Toggle */}
+          {setShowFavoritesOnly && (
+            <button
+              type="button"
+              onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+              title={showFavoritesOnly ? '전체 프롬프트 보기' : '즐겨찾기한 프롬프트만 보기'}
+              className={`p-3 rounded-xl border transition-all flex items-center gap-1.5 shrink-0 cursor-pointer ${
+                showFavoritesOnly
+                  ? 'bg-amber-500 text-white border-amber-600 shadow-xs'
+                  : 'border-stone-200 dark:border-zinc-800 text-stone-600 dark:text-zinc-400 hover:bg-stone-100 dark:hover:bg-zinc-800'
+              }`}
+              id="searchbar-fav-toggle-btn"
+            >
+              <Bookmark className={`w-4 h-4 ${showFavoritesOnly ? 'fill-white' : ''}`} />
+              <span className="hidden xl:inline text-xs font-semibold">
+                즐겨찾기 {favoritesCount > 0 ? `(${favoritesCount})` : ''}
+              </span>
+            </button>
+          )}
+
           {/* Reset Filters */}
           {isFiltered && (
             <button
@@ -314,19 +342,28 @@ export const SearchBar: React.FC<SearchBarProps> = ({
           /* Curated categories */
           CATEGORIES.map((cat) => {
             const isSelected = selectedCategory === cat.id;
+            const isEduCategory = ['교과 삽화', '포스터', '학습지 그림', '캐릭터'].includes(cat.id);
             return (
               <button
                 key={cat.id}
                 type="button"
                 onClick={() => setSelectedCategory(cat.id as UseCaseCategory)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all shrink-0 flex items-center gap-1.5 ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all shrink-0 flex items-center gap-1.5 cursor-pointer ${
                   isSelected
-                    ? 'bg-stone-900 dark:bg-stone-100 text-white dark:text-zinc-950 font-semibold shadow-xs'
+                    ? isEduCategory
+                      ? 'bg-indigo-600 text-white font-bold shadow-xs'
+                      : 'bg-stone-900 dark:bg-stone-100 text-white dark:text-zinc-950 font-semibold shadow-xs'
+                    : isEduCategory
+                    ? 'bg-indigo-50/70 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800/80 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 font-semibold'
                     : 'bg-white dark:bg-zinc-900 text-stone-600 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-zinc-200 border border-stone-200 dark:border-zinc-800'
                 }`}
                 id={`cat-pill-${cat.id.replace(/[^a-zA-Z0-9]/g, '-')}`}
               >
-                {isSelected && <Sparkles className="w-3 h-3 text-amber-400" />}
+                {isSelected ? (
+                  <Sparkles className="w-3 h-3 text-amber-400" />
+                ) : isEduCategory ? (
+                  <GraduationCap className="w-3.5 h-3.5 text-indigo-500" />
+                ) : null}
                 <span>{cat.label}</span>
               </button>
             );

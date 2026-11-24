@@ -1,13 +1,14 @@
 import { GoogleGenAI } from '@google/genai';
 
-function getGeminiClient(): GoogleGenAI | null {
+function getGeminiClient(customKey?: string): GoogleGenAI | null {
   const rawKey =
+    customKey ||
     process.env.GEMINI_API_KEY ||
     process.env.VITE_GEMINI_API_KEY ||
     process.env.GOOGLE_API_KEY ||
     '';
 
-  const apiKey = rawKey.trim().replace(/^["']|["']$/g, '');
+  const apiKey = (rawKey || '').trim().replace(/^["']|["']$/g, '');
 
   if (!apiKey || apiKey === 'MY_GEMINI_API_KEY' || apiKey.length < 10) {
     return null;
@@ -51,17 +52,23 @@ export default async function handler(req: any, res: any) {
 
   const body = req.body || {};
   const { prompt = '', aspectRatio = '1:1', negativePrompt = '' } = body;
+  const customKey =
+    (req.headers['x-gemini-api-key'] as string) ||
+    (req.headers['authorization'] ? (req.headers['authorization'] as string).replace(/^Bearer\s+/i, '') : '') ||
+    body.apiKey ||
+    '';
+
   const validAspectRatios = ['1:1', '3:4', '4:3', '9:16', '16:9'];
   const selectedAspectRatio = validAspectRatios.includes(aspectRatio) ? aspectRatio : '1:1';
 
   try {
-    const ai = getGeminiClient();
+    const ai = getGeminiClient(customKey);
     if (!ai) {
       const fallbackUrl = getSmartFallbackImage(prompt);
       return res.status(200).json({
         imageUrl: fallbackUrl,
         aspectRatio: selectedAspectRatio,
-        message: 'GEMINI_API_KEY 미설정 데모 모드로 고화질 프리뷰 이미지가 렌더링되었습니다.',
+        message: '개인 Gemini API 키(BYOK)를 등록하시면 실시간 생성이 가능하며, 현재는 고화질 스마트 프리뷰가 표시되었습니다.',
         isFallback: true,
       });
     }

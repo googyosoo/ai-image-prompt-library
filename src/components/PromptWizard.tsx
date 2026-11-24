@@ -30,6 +30,7 @@ interface PromptWizardProps {
   onCopy: (text: string, title: string) => void;
   onSendToCompare: (promptText: string, title: string, slotId: 'A' | 'B', imageUrl?: string) => void;
   onSendToBuilder: (suggestedBlockIds: string[], subject?: string) => void;
+  userApiKey?: string;
 }
 
 // 1. Purposes with rich icons and descriptions
@@ -179,6 +180,7 @@ export const PromptWizard: React.FC<PromptWizardProps> = ({
   onCopy,
   onSendToCompare,
   onSendToBuilder,
+  userApiKey,
 }) => {
   // Wizard State
   const [selectedPurpose, setSelectedPurpose] = useState<PurposeOption>(PURPOSES[0]);
@@ -263,11 +265,15 @@ export const PromptWizard: React.FC<PromptWizardProps> = ({
     try {
       const res = await fetch('/api/generate-image', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(userApiKey ? { 'x-gemini-api-key': userApiKey } : {}),
+        },
         body: JSON.stringify({
           prompt: masterPrompt,
           aspectRatio,
           negativePrompt: 'blurry, low quality, distorted anatomy, watermark',
+          apiKey: userApiKey,
         }),
       });
 

@@ -1,6 +1,266 @@
 import { PromptItem } from '../types';
 
 export const PROMPT_PRESETS: PromptItem[] = [
+  // ================= 교과 수업용 특화 프리셋 =================
+  {
+    id: 'edu-science-water-cycle',
+    title: 'Science Textbook 3D Water Cycle Infographic',
+    koreanTitle: '과학 교과서 물의 순환 3D 인포그래픽 단면도',
+    category: '교과 삽화',
+    style: '3D Render / Pixar',
+    fullPrompt: 'Educational science textbook illustration cross-section diagram of the Earth water cycle, showing evaporation from shimmering ocean, condensation forming fluffy white clouds, precipitation rain over green mountain range, underground water runoff flowing into river, clean 3D claymation render style, clear visual stages, bright cheerful educational lighting, high resolution, suitable for elementary and middle school textbooks.',
+    koreanDescription: '증발, 응결, 강수, 지하수 흐름 등 물의 순환 전 과정을 입체 단면도로 알기 쉽게 표현한 초·중등 과학 교과서 및 수업용 3D 삽화 프롬프트입니다.',
+    sampleImageUrl: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=900&q=80',
+    targetModels: ['Nano Banana (Gemini)', 'DALL-E 3', 'Midjourney v6', 'Flux.1'],
+    recommendedAspectRatio: '16:9',
+    tags: ['교과 삽화', '과학', '물의 순환', '인포그래픽', '단면도', '3D 렌더', '수업자료'],
+    lighting: 'Bright cheerful daylight with soft diffused educational rim lighting',
+    camera: 'Isometric 45-degree angle, sharp focus across entire cross-section',
+    copiedCount: 4210,
+    featured: true,
+    variables: [
+      {
+        key: 'subject',
+        label: '교과 주제',
+        placeholder: 'water cycle',
+        defaultValue: 'water cycle',
+        options: ['water cycle', 'plant photosynthesis and cell structure', 'solar system planetary orbits', 'volcano cross-section and magma chamber']
+      },
+      {
+        key: 'gradeLevel',
+        label: '학습 대상 연령',
+        placeholder: 'elementary and middle school textbooks',
+        defaultValue: 'elementary and middle school textbooks',
+        options: ['elementary and middle school textbooks', 'high school earth science inquiry guide', 'early childhood nature exploration']
+      }
+    ],
+    negativePrompt: 'text, watermark, messy lines, scary, dark, realistic photo, blurry, bad anatomy'
+  },
+  {
+    id: 'edu-history-geobukseon',
+    title: 'Korean History Joseon Turtle Ship Geobukseon Naval Fleet',
+    koreanTitle: '한국사 조선 거북선과 판옥선 해상 진형 삽화',
+    category: '교과 삽화',
+    style: 'Watercolor / Ink',
+    fullPrompt: 'Historical educational textbook illustration of Admiral Yi Sun-sin Joseon naval fleet, majestic iron-clad Geobukseon turtle ship at the center with dragon head emitting smoke, wooden Panokseon warships surrounding in crane-wing formation on dynamic ocean waves, traditional Korean ink wash painting combined with delicate digital watercolor, authentic Joseon flag banners, heroic and historically accurate atmosphere.',
+    koreanDescription: '임진왜란 학익진 전술과 거북선·판옥선의 위용을 전통 수묵 담채와 현대적 일러스트 감성으로 재현한 역사 교과서 및 수업 탐구자료용 삽화입니다.',
+    sampleImageUrl: 'https://images.unsplash.com/photo-1578632767115-351597cf2477?auto=format&fit=crop&w=900&q=80',
+    targetModels: ['Midjourney v6', 'Nano Banana (Gemini)', 'Flux.1', 'DALL-E 3'],
+    recommendedAspectRatio: '16:9',
+    tags: ['교과 삽화', '역사', '한국사', '거북선', '임진왜란', '수묵화', '전통'],
+    lighting: 'Dramatic morning sea mist with golden sunrays piercing the clouds',
+    camera: 'Cinematic wide-angle nautical shot, eye-level heroic composition',
+    copiedCount: 3950,
+    featured: true,
+    variables: [
+      {
+        key: 'scene',
+        label: '역사적 장면',
+        placeholder: 'majestic iron-clad Geobukseon turtle ship at the center',
+        defaultValue: 'majestic iron-clad Geobukseon turtle ship at the center',
+        options: [
+          'majestic iron-clad Geobukseon turtle ship at the center',
+          'King Sejong creating Hunminjeongeum alphabet in royal palace',
+          'ancient Goguryeo equestrian hunters horseback archery mural style',
+          'March 1st Movement peaceful independence demonstration with Taegeukgi'
+        ]
+      }
+    ],
+    negativePrompt: 'modern buildings, cartoonish, low resolution, inaccurate costume, western armor, blurry'
+  },
+  {
+    id: 'edu-poster-library-reading',
+    title: 'School Library Reading Month Warm Emotional Poster',
+    koreanTitle: '학교 도서관 온작품 읽기 독서의 달 감성 포스터',
+    category: '포스터',
+    style: 'Anime / Manga',
+    fullPrompt: 'School library reading campaign poster illustration, a student sitting under a giant magical tree made of glowing open books in a sunlit cozy classroom library, colorful paper planes flying into the starlit sky, warm pastel color palette, soft watercolor and Ghibli anime aesthetic, hopeful educational theme, spacious top area suitable for event typography, heartwarming and inspiring.',
+    koreanDescription: '도서관 행사, 독서의 달, 아침 독서 주간 게시용 감성적인 포스터 삽화로, 상단에 학교명과 표어를 넣기 좋은 여백을 갖춘 일러스트 프롬프트입니다.',
+    sampleImageUrl: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=900&q=80',
+    targetModels: ['Nano Banana (Gemini)', 'DALL-E 3', 'Midjourney v6', 'Flux.1'],
+    recommendedAspectRatio: '4:5',
+    tags: ['포스터', '독서', '학교 도서관', '온작품 읽기', '감성 일러스트', '포스터/표어'],
+    lighting: 'Warm golden hour sunlight streaming through library window with dust motes',
+    camera: 'Vertical portrait poster framing, clean composition with negative space for text',
+    copiedCount: 4680,
+    featured: true,
+    variables: [
+      {
+        key: 'theme',
+        label: '포스터 주제',
+        placeholder: 'reading campaign poster illustration',
+        defaultValue: 'reading campaign poster illustration',
+        options: [
+          'reading campaign poster illustration',
+          'anti-bullying friendship and kindness campaign poster',
+          'science fair invention and creativity festival poster',
+          'school sports day teamwork and passion festival poster'
+        ]
+      }
+    ],
+    negativePrompt: 'text, letters, cluttered, dark, gloomy, scary, blurry, distorted hands'
+  },
+  {
+    id: 'edu-poster-carbon-neutral',
+    title: 'Eco-Friendly Carbon Neutrality Earth Day School Poster',
+    koreanTitle: '친환경 지구의 날 탄소중립 실천 학교 포스터',
+    category: '포스터',
+    style: 'Minimalism',
+    fullPrompt: 'Eco-friendly environmental protection campaign poster, hands gently holding a flourishing miniature green Earth with tiny solar panels, wind turbines, and sprouting tree seedlings, clean minimalist flat design with subtle papercut textures, refreshing emerald green and sky blue palette, clear message of hope and climate action, modern educational poster design with headline space.',
+    koreanDescription: '환경의 날, 에너지 절약 주간, 탄소중립 환경교육에 적합한 직관적이고 깔끔한 미니멀 그래픽 스타일의 학교 포스터 프롬프트입니다.',
+    sampleImageUrl: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=900&q=80',
+    targetModels: ['DALL-E 3', 'Nano Banana (Gemini)', 'Midjourney v6', 'Stable Diffusion XL'],
+    recommendedAspectRatio: '4:5',
+    tags: ['포스터', '환경교육', '탄소중립', '지구의 날', '친환경', '미니멀'],
+    lighting: 'Clean studio lighting, vibrant eco-friendly natural reflections',
+    camera: 'Centered graphic design layout, vertical poster aspect ratio with top breathing room',
+    copiedCount: 3820,
+    featured: true,
+    variables: [
+      {
+        key: 'ecoTheme',
+        label: '환경 실천 주제',
+        placeholder: 'solar panels, wind turbines, and sprouting tree seedlings',
+        defaultValue: 'solar panels, wind turbines, and sprouting tree seedlings',
+        options: [
+          'solar panels, wind turbines, and sprouting tree seedlings',
+          'clean oceans with sea turtles freed from plastic waste',
+          'zero-waste tumblers and eco-friendly school cafeteria',
+          'bicycles and electric school bus in green urban park'
+        ]
+      }
+    ],
+    negativePrompt: 'smog, pollution, garbage, realistic photo, cluttered, messy typography, dark'
+  },
+  {
+    id: 'edu-worksheet-alphabet-animals',
+    title: 'Elementary English Phonics Animal Coloring Line Art Clip Art',
+    koreanTitle: '초등 영어 파닉스 동물 라인아트 컬러링 클립아트',
+    category: '학습지 그림',
+    style: 'Minimalism',
+    fullPrompt: 'Cute black and white clean vector line art clip art for children coloring worksheet, friendly baby animals (lion, elephant, giraffe, monkey) reading books together, bold clear outlines, pure white background, no shading or gray tones, high contrast, perfect for kindergarten and elementary school printable worksheets and activities.',
+    koreanDescription: '학습지 및 활동지 인쇄에 최적화된 흑백 라인아트 클립아트로, 학생들이 직접 색칠(컬러링)하거나 알파벳·단어 매칭 활동에 바로 쓸 수 있는 프롬프트입니다.',
+    sampleImageUrl: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=900&q=80',
+    targetModels: ['DALL-E 3', 'Nano Banana (Gemini)', 'Midjourney v6', 'Flux.1'],
+    recommendedAspectRatio: '1:1',
+    tags: ['학습지 그림', '클립아트', '라인아트', '컬러링', '초등영어', '활동지'],
+    lighting: 'High-key flat lighting, pure monochrome contrast',
+    camera: 'Straight-on 2D vector flat icon perspective, centered isolated object',
+    copiedCount: 5120,
+    featured: true,
+    variables: [
+      {
+        key: 'animals',
+        label: '등장 캐릭터/동물',
+        placeholder: 'friendly baby animals (lion, elephant, giraffe, monkey) reading books together',
+        defaultValue: 'friendly baby animals (lion, elephant, giraffe, monkey) reading books together',
+        options: [
+          'friendly baby animals (lion, elephant, giraffe, monkey) reading books together',
+          'happy school stationeries (smiling pencil, eraser, ruler, backpack)',
+          'cheerful fruits and vegetables with cute cartoon faces',
+          'friendly space exploration astronauts and friendly alien'
+        ]
+      }
+    ],
+    negativePrompt: 'colors, gradients, gray shading, blurry, thin messy lines, realistic fur, dark background'
+  },
+  {
+    id: 'edu-worksheet-math-fraction',
+    title: 'Elementary Math Fraction Pizza Division Visual Concept Model',
+    koreanTitle: '초등 수학 분수 개념 피자 나누기 시각화 학습지 삽화',
+    category: '학습지 그림',
+    style: '3D Render / Pixar',
+    fullPrompt: 'Educational math visual aid clip art for elementary fractions, a delicious cartoon pizza sliced into equal 8 slices with 3 slices lifted showing 3/8 fraction concept, bright vibrant colors, cute smooth 3D clay aesthetic, isolated on pure white background, clear visual distinction between slices, clean educational asset for worksheet and test paper illustrations.',
+    koreanDescription: '분수(단위분수, 진분수)의 덧셈과 뺄셈 개념을 직관적으로 이해할 수 있는 피자 조각 3D 모델링 삽화로, 수학 학습지 및 시험지 문제용 그림입니다.',
+    sampleImageUrl: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=900&q=80',
+    targetModels: ['Nano Banana (Gemini)', 'DALL-E 3', 'Flux.1', 'Midjourney v6'],
+    recommendedAspectRatio: '1:1',
+    tags: ['학습지 그림', '수학', '분수', '시각화', '피자', '교재 삽화', '학습지'],
+    lighting: 'Bright soft studio lighting, crisp shadows',
+    camera: 'Top-down 45-degree angle educational diagram view, isolated on white',
+    copiedCount: 3740,
+    featured: false,
+    variables: [
+      {
+        key: 'mathConcept',
+        label: '수학 개념',
+        placeholder: 'pizza sliced into equal 8 slices with 3 slices lifted showing 3/8 fraction',
+        defaultValue: 'pizza sliced into equal 8 slices with 3 slices lifted showing 3/8 fraction',
+        options: [
+          'pizza sliced into equal 8 slices with 3 slices lifted showing 3/8 fraction',
+          'colorful wooden geometric blocks (cube, sphere, cylinder, cone) labeled',
+          'cute analog clock with colorful hands showing 3:30 time reading',
+          'balance scale comparing weights with cute apples and blocks'
+        ]
+      }
+    ],
+    negativePrompt: 'messy, realistic photo, dark background, complex text, unproportional slices'
+  },
+  {
+    id: 'edu-character-modi-robot',
+    title: 'Friendly Classroom AI Robot Assistant Modi 3D Mascot',
+    koreanTitle: '친절한 교실 수업 도우미 AI 로봇 캐릭터 모디',
+    category: '캐릭터',
+    style: '3D Render / Pixar',
+    fullPrompt: 'Full-body character design of a cute friendly AI classroom assistant robot named Modi, round soft white ceramic body with glowing digital emoticon eyes, holding a glowing digital pencil and a tablet, cheerful wave gesture, Pixar 3D animation style, cute rounded proportions, warm welcoming smile, isolated on solid clean background, character mascot sheet suitable for classroom notices and slides.',
+    koreanDescription: '학급 안내장, 슬라이드 발표, 수업 자료에 마스코트로 활용할 수 있는 친근하고 귀여운 교실 도우미 AI 로봇 캐릭터 프롬프트입니다.',
+    sampleImageUrl: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=900&q=80',
+    targetModels: ['Nano Banana (Gemini)', 'DALL-E 3', 'Midjourney v6', 'Flux.1'],
+    recommendedAspectRatio: '1:1',
+    tags: ['캐릭터', '마스코트', 'AI 로봇', '학급도우미', '픽사 3D', '수업자료'],
+    lighting: 'Soft studio key light with gentle warm rim light',
+    camera: 'Eye-level full character portrait, clean isolated background',
+    copiedCount: 4890,
+    featured: true,
+    variables: [
+      {
+        key: 'pose',
+        label: '동작 및 표정',
+        placeholder: 'holding a glowing digital pencil and a tablet, cheerful wave gesture',
+        defaultValue: 'holding a glowing digital pencil and a tablet, cheerful wave gesture',
+        options: [
+          'holding a glowing digital pencil and a tablet, cheerful wave gesture',
+          'wearing graduation cap reading an open thick magical book with glasses',
+          'thumbs up pose with twinkling encouraging star eyes',
+          'holding a large magnifying glass curiously inspecting a question mark'
+        ]
+      }
+    ],
+    negativePrompt: 'scary robot, mechanical wires, sharp metallic edges, dark, gloomy, low poly, bad hands'
+  },
+  {
+    id: 'edu-character-tori-squirrel',
+    title: 'School Safety Guardian Squirrel Mascot Tori 3D Character',
+    koreanTitle: '학교 안전 지킴이 용감한 다람쥐 마스코트 토리',
+    category: '캐릭터',
+    style: '3D Render / Pixar',
+    fullPrompt: 'Full-body 3D Pixar style character design of an adorable brave red squirrel school safety mascot named Tori, wearing a yellow safety patrol vest and green backpack, smiling proudly with hands on hips, fluffy tail, vibrant expressive eyes, high quality octane 3D render, smooth textures, isolated on bright studio background, mascot for elementary school safety campaign.',
+    koreanDescription: '교통안전, 보행안전, 학교폭력 예방 등 학교 안전 캠페인 및 학급 규칙 안내에 딱 맞는 씩씩하고 사랑스러운 다람쥐 마스코트 프롬프트입니다.',
+    sampleImageUrl: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=900&q=80',
+    targetModels: ['Nano Banana (Gemini)', 'Midjourney v6', 'DALL-E 3', 'Flux.1'],
+    recommendedAspectRatio: '1:1',
+    tags: ['캐릭터', '마스코트', '다람쥐', '안전교육', '교통안전', '픽사 3D'],
+    lighting: 'Vibrant outdoor morning sunshine with soft warm fill',
+    camera: 'Full body character turn-around view, centered on clean backdrop',
+    copiedCount: 4150,
+    featured: true,
+    variables: [
+      {
+        key: 'role',
+        label: '역할 및 소품',
+        placeholder: 'wearing a yellow safety patrol vest and green backpack',
+        defaultValue: 'wearing a yellow safety patrol vest and green backpack',
+        options: [
+          'wearing a yellow safety patrol vest and green backpack',
+          'holding a bright green crosswalk stop sign',
+          'wearing doctor coat and stethoscope holding first aid kit',
+          'holding a golden champion trophy cheering enthusiastically'
+        ]
+      }
+    ],
+    negativePrompt: 'feral animal, scary, realistic rodents, aggressive, dirty fur, blurry'
+  },
+  // ================= 기존 프리셋 =================
   {
     id: 'cyberpunk-neon-samurai',
     title: 'Cyberpunk Neon Cyber Samurai',
@@ -635,6 +895,10 @@ export const PROMPT_PRESETS: PromptItem[] = [
 
 export const CATEGORIES: { id: string; label: string; count: number }[] = [
   { id: 'All', label: '전체 (All)', count: PROMPT_PRESETS.length },
+  { id: '교과 삽화', label: '교과 삽화 (교재/교과서)', count: 2 },
+  { id: '포스터', label: '포스터 (학교/환경/표어)', count: 2 },
+  { id: '학습지 그림', label: '학습지 그림 (활동지/클립아트)', count: 2 },
+  { id: '캐릭터', label: '캐릭터 (교육/안내 마스코트)', count: 2 },
   { id: 'Profile / Avatar', label: '프로필 / 아바타', count: 4 },
   { id: 'Product Marketing', label: '제품 마케팅 / 광고', count: 2 },
   { id: 'E-commerce Main', label: '이커머스 제품컷', count: 2 },

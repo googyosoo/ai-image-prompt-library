@@ -1,13 +1,14 @@
 import { GoogleGenAI } from '@google/genai';
 
-function getGeminiClient(): GoogleGenAI | null {
+function getGeminiClient(customKey?: string): GoogleGenAI | null {
   const rawKey =
+    customKey ||
     process.env.GEMINI_API_KEY ||
     process.env.VITE_GEMINI_API_KEY ||
     process.env.GOOGLE_API_KEY ||
     '';
 
-  const apiKey = rawKey.trim().replace(/^["']|["']$/g, '');
+  const apiKey = (rawKey || '').trim().replace(/^["']|["']$/g, '');
 
   if (!apiKey || apiKey === 'MY_GEMINI_API_KEY' || apiKey.length < 10) {
     return null;
@@ -29,7 +30,12 @@ export default async function handler(req: any, res: any) {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
-  const { imageBase64, mimeType = 'image/jpeg', targetModel = 'Midjourney v6' } = req.body || {};
+  const { imageBase64, mimeType = 'image/jpeg', targetModel = 'Midjourney v6', apiKey: bodyApiKey } = req.body || {};
+  const customKey =
+    (req.headers['x-gemini-api-key'] as string) ||
+    (req.headers['authorization'] ? (req.headers['authorization'] as string).replace(/^Bearer\s+/i, '') : '') ||
+    bodyApiKey ||
+    '';
 
   if (!imageBase64 || typeof imageBase64 !== 'string') {
     return res.status(400).json({ error: '유효한 이미지 데이터(Base64)가 필요합니다.' });
@@ -38,7 +44,7 @@ export default async function handler(req: any, res: any) {
   const cleanBase64 = imageBase64.replace(/^data:image\/\w+;base64,/, '');
 
   try {
-    const ai = getGeminiClient();
+    const ai = getGeminiClient(customKey);
     if (!ai) {
       return res.status(200).json({
         enhancedPrompt:

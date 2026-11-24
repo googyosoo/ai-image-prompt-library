@@ -11,7 +11,8 @@ import {
   LogIn,
   Loader2,
 } from 'lucide-react';
-import { AuthUser, ALLOWED_EMAILS } from '../types';
+import { AuthUser } from '../types';
+import { isEmailAllowed } from '../utils/authCrypto';
 
 interface LandingGateProps {
   onLoginSuccess: (user: AuthUser) => void;
@@ -110,11 +111,12 @@ export const LandingGate: React.FC<LandingGateProps> = ({ onLoginSuccess }) => {
     verifyAndLogin(payload.email, payload.name || payload.email.split('@')[0], payload.picture);
   };
 
-  // Check email against allowed whitelist
-  const verifyAndLogin = (email: string, name: string, picture?: string) => {
+  // Check email against allowed whitelist hashes
+  const verifyAndLogin = async (email: string, name: string, picture?: string) => {
     const normalizedEmail = email.toLowerCase().trim();
+    const allowed = await isEmailAllowed(normalizedEmail);
 
-    if (ALLOWED_EMAILS.map((e) => e.toLowerCase()).includes(normalizedEmail)) {
+    if (allowed) {
       const user: AuthUser = {
         email: normalizedEmail,
         name: name || normalizedEmail.split('@')[0],

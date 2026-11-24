@@ -11,8 +11,8 @@ import {
   DataSourceMode,
   GitHubManifestData,
   AuthUser,
-  ALLOWED_EMAILS,
 } from './types';
+import { isEmailAllowed } from './utils/authCrypto';
 
 import { Header } from './components/Header';
 import { SearchBar } from './components/SearchBar';
@@ -24,6 +24,7 @@ import { PromptWizard } from './components/PromptWizard';
 import { PromptLegoBuilder } from './components/PromptLegoBuilder';
 import { ImageToPromptVision } from './components/ImageToPromptVision';
 import { LandingGate } from './components/LandingGate';
+import { ApiKeyModal } from './components/ApiKeyModal';
 import { Toast } from './components/Toast';
 
 
@@ -38,11 +39,7 @@ export default function App() {
     if (saved) {
       try {
         const parsed: AuthUser = JSON.parse(saved);
-        if (
-          parsed &&
-          parsed.isAuthenticated &&
-          ALLOWED_EMAILS.map((e) => e.toLowerCase()).includes(parsed.email.toLowerCase())
-        ) {
+        if (parsed && parsed.isAuthenticated && parsed.email) {
           return parsed;
         }
       } catch (e) {
@@ -51,6 +48,18 @@ export default function App() {
     }
     return null;
   });
+
+  // Verify stored auth user email hash on mount
+  useEffect(() => {
+    if (authUser && authUser.email) {
+      isEmailAllowed(authUser.email).then((allowed) => {
+        if (!allowed) {
+          setAuthUser(null);
+          localStorage.removeItem('ai_studio_auth_user');
+        }
+      });
+    }
+  }, []);
 
   const handleLoginSuccess = (user: AuthUser) => {
     setAuthUser(user);
@@ -145,7 +154,7 @@ export default function App() {
   const handleCopyPrompt = (text: string, title: string) => {
     if (navigator.clipboard) {
       navigator.clipboard.writeText(text);
-      addToast('success', '클립보드에 복사되었습니다!', `${title} 프롬프트가 복사되었습니다.`);
+      addToast('success', '클립보드에 복사되었습니다!', `${title} 내용이 복사되었습니다.`);
     } else {
       const textarea = document.createElement('textarea');
       textarea.value = text;
@@ -153,8 +162,34 @@ export default function App() {
       textarea.select();
       document.execCommand('copy');
       document.body.removeChild(textarea);
-      addToast('success', '클립보드에 복사되었습니다!', `${title} 프롬프트가 복사되었습니다.`);
+      addToast('success', '클립보드에 복사되었습니다!', `${title} 내용이 복사되었습니다.`);
     }
+  };
+
+  // BYOK (Bring Your Own Key) Gemini API Key State
+  const [apiKey, setApiKey] = useState<string>(() => {
+    return localStorage.getItem('ai_user_gemini_api_key') || '';
+  });
+  const [isApiKeyModalOpen, setIsApiKeyModalOpen] = useState(false);
+
+  const handleSaveApiKey = (newKey: string) => {
+    setApiKey(newKey);
+    if (newKey) {
+      localStorage.setItem('ai_user_gemini_api_key', newKey);
+      addToast('success', 'BYOK API 키 저장됨', '개인 Gemini API 키가 브라우저에 안전하게 보관되었습니다.');
+    } else {
+      localStorage.removeItem('ai_user_gemini_api_key');
+      addToast('info', 'API 키 삭제됨', '개인 API 키가 안전하게 삭제되었습니다.');
+    }
+  };
+
+  // Tag Click Filter Handler
+  const handleSelectTag = (tag: string) => {
+    setSearchQuery(tag);
+    if (dataSource === 'github') {
+      setDataSource('curated');
+    }
+    addToast('info', '태그 필터 적용', `'${tag}' 키워드로 프롬프트가 필터링되었습니다.`);
   };
 
   // Fetch GitHub Manifest
@@ -472,6 +507,8 @@ export default function App() {
         totalPromptsCount={activeTotalCount}
         user={authUser}
         onLogout={handleLogout}
+        apiKey={apiKey}
+        onOpenApiKeyModal={() => setIsApiKeyModalOpen(true)}
       />
 
 
@@ -505,6 +542,9 @@ export default function App() {
               totalPages={gitHubTotalPages}
               onPageChange={setGitHubPage}
               onRefreshGitHub={fetchGitHubPrompts}
+              showFavoritesOnly={showFavoritesOnly}
+              setShowFavoritesOnly={setShowFavoritesOnly}
+              favoritesCount={favoriteIds.length}
             />
 
             {/* Loading Indicator for GitHub fetch */}
@@ -535,6 +575,7 @@ export default function App() {
                     onOpenDetail={setSelectedDetailPrompt}
                     isFavorite={favoriteIds.includes(prompt.id)}
                     onToggleFavorite={toggleFavorite}
+                    onSelectTag={handleSelectTag}
                   />
                 ))}
               </div>
@@ -591,6 +632,7 @@ export default function App() {
             onCopy={handleCopyPrompt}
             onSendToCompare={handleSendCustomTextToCompare}
             onSendToBuilder={handleSendVisionToBuilder}
+            userApiKey={apiKey}
           />
         )}
 
@@ -601,6 +643,7 @@ export default function App() {
             onSendToBuilder={handleSendVisionToBuilder}
             onSendToCompare={handleSendVisionToCompare}
             onSendToRemix={handleSendVisionToRemix}
+            userApiKey={apiKey}
           />
         )}
 
@@ -611,6 +654,7 @@ export default function App() {
             onCopy={handleCopyPrompt}
             onSendToCompare={handleSendCustomTextToCompare}
             initialBlockIds={legoBuilderInitialBlocks}
+            userApiKey={apiKey}
           />
         )}
 
@@ -622,6 +666,7 @@ export default function App() {
             slotB={slotB}
             setSlotB={setSlotB}
             onCopy={handleCopyPrompt}
+            userApiKey={apiKey}
             onSelectPresetToSlot={(prompt, slotId) => {
               const target = {
                 id: slotId,
@@ -645,6 +690,7 @@ export default function App() {
           <PromptRemixer
             onCopy={handleCopyPrompt}
             onSendToCompare={handleSendCustomTextToCompare}
+            userApiKey={apiKey}
           />
         )}
 
@@ -658,6 +704,14 @@ export default function App() {
         onSendToCompare={handleSendToCompare}
         isFavorite={selectedDetailPrompt ? favoriteIds.includes(selectedDetailPrompt.id) : false}
         onToggleFavorite={toggleFavorite}
+      />
+
+      {/* BYOK API Key Modal */}
+      <ApiKeyModal
+        isOpen={isApiKeyModalOpen}
+        onClose={() => setIsApiKeyModalOpen(false)}
+        apiKey={apiKey}
+        onSaveKey={handleSaveApiKey}
       />
 
       {/* Global Toast Stack */}

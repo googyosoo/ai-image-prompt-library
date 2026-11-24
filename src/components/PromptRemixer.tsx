@@ -17,11 +17,13 @@ import { STYLES, CATEGORIES, AI_MODELS } from '../data/promptsData';
 interface PromptRemixerProps {
   onCopy: (text: string, title: string) => void;
   onSendToCompare: (promptText: string, title: string, slot: 'A' | 'B') => void;
+  userApiKey?: string;
 }
 
 export const PromptRemixer: React.FC<PromptRemixerProps> = ({
   onCopy,
   onSendToCompare,
+  userApiKey,
 }) => {
   const [ideaText, setIdeaText] = useState('');
   const [selectedStyle, setSelectedStyle] = useState<PromptStyle>('Cinematic / Film');
@@ -58,12 +60,16 @@ export const PromptRemixer: React.FC<PromptRemixerProps> = ({
     try {
       const response = await fetch('/api/enhance-prompt', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(userApiKey ? { 'x-gemini-api-key': userApiKey } : {}),
+        },
         body: JSON.stringify({
           idea: ideaText,
           style: selectedStyle,
           category: selectedCategory,
           targetModel: selectedModel,
+          apiKey: userApiKey,
         }),
       });
 

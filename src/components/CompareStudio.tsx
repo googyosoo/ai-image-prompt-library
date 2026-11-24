@@ -26,6 +26,7 @@ interface CompareStudioProps {
   setSlotB: React.Dispatch<React.SetStateAction<CompareSlot>>;
   onCopy: (text: string, title: string) => void;
   onSelectPresetToSlot: (prompt: PromptItem, slotId: 'A' | 'B') => void;
+  userApiKey?: string;
 }
 
 export const CompareStudio: React.FC<CompareStudioProps> = ({
@@ -35,6 +36,7 @@ export const CompareStudio: React.FC<CompareStudioProps> = ({
   setSlotB,
   onCopy,
   onSelectPresetToSlot,
+  userApiKey,
 }) => {
   const [viewMode, setViewMode] = useState<'side-by-side' | 'slider' | 'diff'>('side-by-side');
   const [sliderPosition, setSliderPosition] = useState(50);
@@ -101,11 +103,15 @@ export const CompareStudio: React.FC<CompareStudioProps> = ({
     try {
       const response = await fetch('/api/generate-image', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(userApiKey ? { 'x-gemini-api-key': userApiKey } : {}),
+        },
         body: JSON.stringify({
           prompt: targetSlot.prompt,
           aspectRatio: targetSlot.aspectRatio,
           negativePrompt: targetSlot.negativePrompt,
+          apiKey: userApiKey,
         }),
       });
 

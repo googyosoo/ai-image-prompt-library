@@ -24,6 +24,7 @@ interface ImageToPromptVisionProps {
   onSendToBuilder: (suggestedBlockIds: string[], subject?: string) => void;
   onSendToCompare: (promptText: string, title: string, slotId: 'A' | 'B', imageUrl?: string) => void;
   onSendToRemix: (idea: string, style?: PromptStyle, category?: UseCaseCategory) => void;
+  userApiKey?: string;
 }
 
 // High quality demo preset samples
@@ -59,6 +60,7 @@ export const ImageToPromptVision: React.FC<ImageToPromptVisionProps> = ({
   onSendToBuilder,
   onSendToCompare,
   onSendToRemix,
+  userApiKey,
 }) => {
   const [selectedImageBase64, setSelectedImageBase64] = useState<string | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(SAMPLE_IMAGES[0].url);
@@ -154,11 +156,15 @@ export const ImageToPromptVision: React.FC<ImageToPromptVisionProps> = ({
     try {
       const res = await fetch('/api/analyze-image', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(userApiKey ? { 'x-gemini-api-key': userApiKey } : {}),
+        },
         body: JSON.stringify({
           imageBase64: base64Content || 'placeholder',
           mimeType: mime || 'image/jpeg',
           targetModel,
+          apiKey: userApiKey,
         }),
       });
 
